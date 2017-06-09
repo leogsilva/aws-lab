@@ -1,0 +1,356 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: '(SO0002) - EC2 Scheduler: This template installs an opt-in version of
+  the EC2 Scheduler for automatically starting and stopping EC2 instances.'
+Mappings:
+  Schedule:
+    Time:
+      15minutes: cron(0/15 * * * ? *)
+      1hour: cron(0 * * * ? *)
+      1minute: cron(0/1 * * * ? *)
+      30minutes: cron(0/30 * * * ? *)
+      5minutes: cron(0/5 * * * ? *)
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+    - Label:
+        default: Tag Configuration
+      Parameters:
+      - CustomTagName
+    - Label:
+        default: CloudWatch Event Schedule Configuration
+      Parameters:
+      - Schedule
+    - Label:
+        default: Default Value Configuration
+      Parameters:
+      - DefaultStartTime
+      - DefaultStopTime
+      - DefaultDaysActive
+    - Label:
+        default: DynamoDB Configuration
+      Parameters:
+      - DynamoDBTableName
+      - ReadCapacityUnits
+      - WriteCapacityUnits
+    - Label:
+        default: CloudWatch Custom Metric
+      Parameters:
+      - CloudWatchMetrics
+    - Label:
+        default: Anonymous Metrics Request
+      Parameters:
+      - SendAnonymousData
+Outputs:
+  DDBTableName:
+    Description: DynamoDB Table Name
+    Value:
+      Ref: CreateParamDDB
+  DDBTableNameState:
+    Description: DynamoDB Table Name for Resources State
+    Value:
+      Ref: CreateParamDDBState
+  UUID:
+    Description: Newly created random UUID.
+    Value:
+      Fn::GetAtt:
+      - CreateUniqueID
+      - UUID
+Parameters:
+  CloudWatchMetrics:
+    AllowedValues:
+    - Enabled
+    - Disabled
+    Default: Enabled
+    Description: Create CloudWatch Custom Metric
+    Type: String
+  CustomTagName:
+    Default: scheduler:ec2-startstop
+    Description: Custom Tag Name
+    Type: String
+  DefaultDaysActive:
+    Default: all
+    Description: Enter 'all', 'weekdays', or any combination of days ('mon', 'tue',
+      'wed', 'thu', 'fri', 'sat', or 'sun') comma separated
+    Type: String
+  DefaultStartTime:
+    Default: 0800
+    Description: Default Start Time (UTC, 24-hour format)
+    Type: String
+  DefaultStopTime:
+    Default: '1800'
+    Description: Default Start Time (UTC, 24-hour format)
+    Type: String
+  DynamoDBTableName:
+    Default: EC2-Scheduler
+    Description: DynamoDB Table Name
+    Type: String
+  DynamoDBTableNameState:
+    Default: EC2-Scheduler-State
+    Description: Dynamodb Table Name for saving resources State and configuration
+    Type: String
+  ReadCapacityUnits:
+    ConstraintDescription: should be between 5 and 10000
+    Default: '1'
+    Description: Provisioned read throughput
+    MaxValue: '10000'
+    MinValue: '1'
+    Type: Number
+  Schedule:
+    AllowedValues:
+    - 1minute
+    - 5minutes
+    - 15minutes
+    - 30minutes
+    - 1hour
+    Default: 5minutes
+    Description: Schedule for CWE Scheduled Expression
+    Type: String
+  SendAnonymousData:
+    AllowedValues:
+    - 'Yes'
+    - 'No'
+    Default: 'Yes'
+    Description: Send anonymous data to AWS
+    Type: String
+  WriteCapacityUnits:
+    ConstraintDescription: should be between 5 and 10000
+    Default: '1'
+    Description: Provisioned write throughput
+    MaxValue: '10000'
+    MinValue: '1'
+    Type: Number
+Resources:
+  CreateParamDDB:
+    Properties:
+      AttributeDefinitions:
+      - AttributeName: SolutionName
+        AttributeType: S
+      KeySchema:
+      - AttributeName: SolutionName
+        KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits:
+          Ref: ReadCapacityUnits
+        WriteCapacityUnits:
+          Ref: WriteCapacityUnits
+      TableName:
+        Ref: DynamoDBTableName
+    Type: AWS::DynamoDB::Table
+  CreateParamDDBState:
+    Properties:
+      AttributeDefinitions:
+      - AttributeName: arn
+        AttributeType: S
+      KeySchema:
+      - AttributeName: arn
+        KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits:
+          Ref: ReadCapacityUnits
+        WriteCapacityUnits:
+          Ref: WriteCapacityUnits
+      TableName:
+        Ref: DynamoDBTableNameState
+    Type: AWS::DynamoDB::Table
+  CreateUniqueID:
+    Properties:
+      CreateUniqueID: 'true'
+      DependsOn:
+      - SolutionHelper
+      Region:
+        Ref: AWS::Region
+      ServiceToken:
+        Fn::GetAtt:
+        - SolutionHelper
+        - Arn
+    Type: Custom::CreateUUID
+  PermissionForEventsToInvokeLambda:
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Ref: ec2SchedulerOptIn
+      Principal: events.amazonaws.com
+      SourceArn:
+        Fn::GetAtt:
+        - ScheduledRule
+        - Arn
+    Type: AWS::Lambda::Permission
+  PutDdbData:
+    Properties:
+      DependsOn:
+      - CreateUniqueID
+      - CreateParamDDB
+      ServiceToken:
+        Fn::GetAtt:
+        - SolutionHelper
+        - Arn
+      StoreInDDB:
+        Fn::Join:
+        - ''
+        - - '{ ''TableName'' : '''
+          - Ref: CreateParamDDB
+          - ''', '
+          - '''Item'': {'
+          - '''CustomTagName'': {''S'': '''
+          - Ref: CustomTagName
+          - '''},'
+          - '''SolutionName'': {''S'': ''EC2Scheduler''},'
+          - '''DefaultStartTime'': {''S'': '''
+          - Ref: DefaultStartTime
+          - '''},'
+          - '''DefaultStopTime'': {''S'': '''
+          - Ref: DefaultStopTime
+          - '''},'
+          - '''SendAnonymousData'': {''S'': '''
+          - Ref: SendAnonymousData
+          - '''},'
+          - '''CloudWatchMetrics'': {''S'': '''
+          - Ref: CloudWatchMetrics
+          - '''},'
+          - '''UUID'': {''S'': '''
+          - Fn::GetAtt:
+            - CreateUniqueID
+            - UUID
+          - '''},'
+          - '''DefaultDaysActive'': {''S'': '''
+          - Ref: DefaultDaysActive
+          - '''}'
+          - '}'
+          - '}'
+    Type: Custom::PutDDBData
+  ScheduledRule:
+    Properties:
+      Description: Rule to trigger EC2Scheduler function on a schedule
+      ScheduleExpression:
+        Fn::FindInMap:
+        - Schedule
+        - Time
+        - Ref: Schedule
+      State: ENABLED
+      Targets:
+      - Arn:
+          Fn::GetAtt:
+          - ec2SchedulerOptIn
+          - Arn
+        Id: TargetFunctionV1
+    Type: AWS::Events::Rule
+  SolutionHelper:
+    Properties:
+      Code:
+        S3Bucket:
+          Fn::Join:
+          - ''
+          - - solutions-
+            - Ref: AWS::Region
+        S3Key: library/solution-helper/v3/solution-helper.zip
+      Description: This function creates a CloudFormation custom lambda resource that
+        writes parameters into DynamoDB table.
+      Handler: solution-helper.lambda_handler
+      Role:
+        Fn::GetAtt:
+        - SolutionHelperRole
+        - Arn
+      Runtime: python2.7
+      Timeout: '120'
+    Type: AWS::Lambda::Function
+  SolutionHelperRole:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+        Version: '2012-10-17'
+      Path: /
+      Policies:
+      - PolicyDocument:
+          Statement:
+          - Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Effect: Allow
+            Resource: arn:aws:logs:*:*:log-group:/aws/lambda/*
+          - Action:
+            - dynamodb:PutItem
+            Effect: Allow
+            Resource:
+            - arn:aws:dynamodb:*:*:table/*
+          - Action:
+            - lambda:AddPermission
+            - lambda:CreateFunction
+            - lambda:DeleteFunction
+            - lambda:GetFunction
+            - lambda:UpdateFunctionCode
+            - lambda:UpdateFunctionConfiguration
+            - s3:GetObject
+            - events:DeleteRule
+            - events:DisableRule
+            - events:EnableRule
+            - events:PutEvents
+            - events:PutRule
+            - events:PutTargets
+            - events:RemoveTargets
+            - events:ListTargetsByRule
+            - iam:PassRole
+            Effect: Allow
+            Resource: '*'
+          Version: '2012-10-17'
+        PolicyName: Solution_Helper_Permissions
+    Type: AWS::IAM::Role
+  ec2SchedulerOptIn:
+    Properties:
+      CodeUri: s3://br-com-ihm-cloudformation/ab591e4cf5e5888d09d0edd82db30f0d
+      Description: EC2 Scheduler Lambda function for automatically starting and stopping
+        EC2 instances.
+      Handler: ec2-scheduler.lambda_handler
+      Role:
+        Fn::GetAtt:
+        - ec2SchedulerRole
+        - Arn
+      Runtime: python2.7
+      Timeout: 300
+    Type: AWS::Serverless::Function
+  ec2SchedulerRole:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+        Version: '2012-10-17'
+      Path: /
+      Policies:
+      - PolicyDocument:
+          Statement:
+          - Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Effect: Allow
+            Resource: arn:aws:logs:*:*:log-group:/aws/lambda/*
+          - Action:
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            Effect: Allow
+            Resource:
+            - arn:aws:dynamodb:*:*:table/*
+          - Action:
+            - ec2:StartInstances
+            - ec2:StopInstances
+            - ec2:DescribeRegions
+            - ec2:DescribeInstances
+            - cloudwatch:PutMetricData
+            - cloudformation:DescribeStacks
+            Effect: Allow
+            Resource: '*'
+          - Action:
+            - autoscaling:*
+            Effect: Allow
+            Resource: '*'
+          Version: '2012-10-17'
+        PolicyName: ec2SchedulerPermissions
+    Type: AWS::IAM::Role
+Transform: AWS::Serverless-2016-10-31

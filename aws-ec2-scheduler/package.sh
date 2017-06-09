@@ -1,0 +1,1 @@
+aws cloudformation package --profile ihmlabs --region us-east-1 --s3-bucket br-com-ihm-cloudformation --template-file cform/ec2-scheduler.template --output-template-file cform/ec2-scheduler.output.template
