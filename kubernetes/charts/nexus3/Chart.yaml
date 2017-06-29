@@ -1,0 +1,11 @@
+---
+name: "nexus3"
+home: "http://fabric8.io/nexus3/"
+sources:
+- "http://github.com/fabric8io/fabric8-devops/nexus3"
+version: "2.2.327"
+description: "[Nexus](http://www.sonatype.org/nexus/) - A maven repository manager"
+maintainers:
+- name: "Fabric8 Development Team"
+  email: "fabric8@googlegroups.com"
+icon: "https://cdn.rawgit.com/fabric8io/fabric8-devops/master/nexus/src/main/fabric8/icon.png"
