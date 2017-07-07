@@ -45,6 +45,7 @@ Master:
       - credentials-binding:1.11
       - git:3.2.0
       - ec2:1.36
+      - swarm:3.4
 # Used to approve a list of groovy functions in pipelines used the script-security plugin. Can be viewed under /scriptApproval
   # ScriptApproval:
   #   - "method groovy.json.JsonSlurperClassic parseText java.lang.String"
