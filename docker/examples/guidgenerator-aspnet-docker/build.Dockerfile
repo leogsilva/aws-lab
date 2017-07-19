@@ -1,4 +1,4 @@
-FROM msbuild
+FROM msbuild:15
 SHELL ["powershell"]
 
 COPY . 'C:\\build\\'
