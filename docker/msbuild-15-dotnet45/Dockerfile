@@ -8,10 +8,9 @@ RUN Install-WindowsFeature NET-Framework-45-Core ; \
 
 RUN Invoke-WebRequest "https://aka.ms/vs/15/release/vs_BuildTools.exe" -OutFile vs_BuildTools.exe -UseBasicParsing ; \
 	Start-Process -FilePath 'vs_BuildTools.exe' -ArgumentList '--quiet', '--norestart', '--locale en-US' -Wait ; \
-	Remove-Item .\vs_BuildTools.exe ; 
-	
-RUN Invoke-WebRequest "https://download.microsoft.com/download/E/F/D/EFD52638-B804-4865-BB57-47F4B9C80269/NDP462-DevPack-KB3151934-ENU.exe" -Outfile NDP462-DevPack-KB3151934-ENU.exe -UseBasicParsing ; \
-        Start-Process -FilePath 'NDP462-DevPack-KB3151934-ENU.exe' -ArgumentList '/Quiet', '/NoRestart' -Wait ; 
+	Remove-Item .\vs_BuildTools.exe ;
+RUN Invoke-WebRequest "http://go.microsoft.com/fwlink/?LinkId=225702" -Outfile dotNetFx45_Full_x86_x64.exe -UseBasicParsing ; \
+        Start-Process -FilePath 'dotNetFx45_Full_x86_x64.exe' -ArgumentList '/Quiet', '/NoRestart' -Wait ; 
 
 RUN Invoke-WebRequest "https://dist.nuget.org/win-x86-commandline/latest/nuget.exe" -OutFile "C:\windows\nuget.exe" -UseBasicParsing
 RUN & nuget install MSBuild.Microsoft.VisualStudio.Web.targets -Version 14.0.0.3
