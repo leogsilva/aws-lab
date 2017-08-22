@@ -1,9 +1,13 @@
-FROM msbuild:15
-
+# escape=`
+FROM microsoft/windowsservercore:10.0.14393.693
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
-RUN Invoke-WebRequest "https://download.microsoft.com/download/E/2/1/E21644B5-2DF2-47C2-91BD-63C560427900/NDP452-KB2901907-x86-x64-AllOS-ENU.exe" -OutFile NDP452-KB2901907-x86-x64-AllOS-ENU.exe -UseBasicParsing ; \
-	Start-Process -FilePath 'NDP452-KB2901907-x86-x64-AllOS-ENU.exe' -ArgumentList '/q', '/norestart' -Wait; 
+RUN Install-PackageProvider -Name chocolatey -RequiredVersion 2.8.5.130 -Force; `
+    Install-Package -Name microsoft-build-tools -RequiredVersion 14.0.25420.1 -Force; `
+    Install-Package -Name netfx-4.5.2-devpack -RequiredVersion 4.5.5165101 -Force; `
+    Install-Package -Name webdeploy -RequiredVersion 3.5.2 -Force
 
-RUN Invoke-WebRequest "https://download.microsoft.com/download/4/3/B/43B61315-B2CE-4F5B-9E32-34CCA07B2F0E/NDP452-KB2901951-x86-x64-DevPack.exe" -OutFile NDP452-KB2901951-x86-x64-DevPack.exe -UseBasicParsing ; \
-	Start-Process -FilePath 'NDP452-KB2901951-x86-x64-DevPack.exe' -ArgumentList '/q', '/norestart' -Wait; 
+RUN Install-Package -Name nuget.commandline -RequiredVersion 3.4.3 -Force; `
+    & C:\Chocolatey\bin\nuget install MSBuild.Microsoft.VisualStudio.Web.targets -Version 14.0.0.3
+
+ENTRYPOINT ["powershell"]
