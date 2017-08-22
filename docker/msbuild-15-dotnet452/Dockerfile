@@ -10,4 +10,7 @@ RUN Install-PackageProvider -Name chocolatey -RequiredVersion 2.8.5.130 -Force; 
 RUN Install-Package -Name nuget.commandline -RequiredVersion 3.4.3 -Force; `
     & C:\Chocolatey\bin\nuget install MSBuild.Microsoft.VisualStudio.Web.targets -Version 14.0.0.3
 
+RUN setx /M PATH $($Env:PATH + ';' + ${Env:ProgramFiles(x86)} + '\MSBuild\14.0\Bin\')
+RUN setx /M PATH $($Env:PATH + ';' + 'C:\Chocolatey\bin')
+
 ENTRYPOINT ["powershell"]
