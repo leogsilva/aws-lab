@@ -1,0 +1,167 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "Creates a SQl Server Express RDS Instance",
+
+  "Parameters" : {
+
+    "AdminCidr" : {
+      "Description" : "IP Cidr that is allowed to RDP to EC2 instances and SSMS into RDS instances",
+      "Type" : "String",
+      "MinLength" : "9",
+      "MaxLength" : "18",
+      "AllowedPattern" : "^([0-9]+\\.){3}[0-9]+\\/[0-9]+$"
+    },
+
+    "DbMasterUsername" : {
+      "Description" : "The master user name for the database instance.",
+      "Type" : "String"
+    },
+
+    "DbMasterUserPassword" : {
+      "Description" : "The master password for the database instance.",
+      "Type" : "String",
+	  "NoEcho" : "true"
+    },
+
+    "DBInstanceClass" : {
+      "Description" : "The name of the compute and memory capacity class of the DB instance. Must be db.m1.small or bigger for SQL Server Standard.",
+      "Type" : "String",
+      "Default" : "db.t2.micro",
+      "AllowedValues" : ["db.t2.micro","db.m2.small","db.m2.medium"],
+      "ConstraintDescription" : "must be a valid database server instance type."
+    },
+
+    "DBEngine" : {
+      "Description" : "The name of the database engine that the DB instance uses. Choose sqlserver-se (Sql Server Standard) or sqlserver-ee if you want a multi-az deployment.",
+      "Type" : "String",
+      "Default" : "sqlserver-ex",
+      "AllowedValues" : ["sqlserver-ex","sqlserver-web","sqlserver-se","sqlserver-ee"],
+      "ConstraintDescription" : "must be a valid database engine type."
+    },
+
+    "DbAllocatedStorage" : {
+      "Description" : "The allocated storage size specified in gigabytes (GB). Must be at least 20GB for Sql Server Express, at least 200GB for Sql Server Standard.",
+      "Type" : "Number",
+      "Default" : "20",
+      "MinValue" : "20",
+      "ConstraintDescription" : "Allocated storage must be at least 20GB."
+    },
+
+    "DbOptionGroupName" : {
+      "Description" : "For a multi-az deployment, set this to the name of an option group that has the SQL Server mirroring option. Sql Server Express and Web do not support mirroring and so cannot be used in a multi-az deployment. Set this parameter to empty string for those engines.",
+      "Type" : "String",
+      "Default" : ""
+    },
+
+    "VpcId": {
+      "Type": "AWS::EC2::VPC::Id",
+      "Description": "Select a default VPC ID."
+    },
+    "SubnetID": {
+      "Type": "List<AWS::EC2::Subnet::Id>",
+      "Description": "Select a default subnet ID in your selected VPC."
+    }
+  },
+
+  "Resources": {
+
+    "DbInstance": {
+      "Type": "AWS::RDS::DBInstance",
+      "Properties": {
+		"OptionGroupName": { "Ref" : "DbOptionGroupName" },
+        "AllowMajorVersionUpgrade": "false",
+        "AutoMinorVersionUpgrade": "true",
+        "DBInstanceClass": { "Ref" : "DBInstanceClass" },
+        "Port": "1433",
+        "AllocatedStorage": { "Ref" : "DbAllocatedStorage" },
+        "PubliclyAccessible": "false",
+        "StorageType": "standard",
+        "BackupRetentionPeriod": "7",
+        "Engine": { "Ref" : "DBEngine" },
+        "EngineVersion": "13.00.4422.0.v1",
+        "LicenseModel": "license-included",
+		"PreferredBackupWindow": "04:34-05:04",
+        "PreferredMaintenanceWindow": "wed:06:46-wed:07:16",
+        "MasterUsername": { "Ref" : "DbMasterUsername" },
+        "MasterUserPassword": { "Ref" : "DbMasterUserPassword" },
+		"DBSubnetGroupName": { "Ref": "DBSubnetGroup" },
+        "VPCSecurityGroups": [
+          { "Ref": "SSMSSecurityGroup" }
+        ]
+      },
+	  "DeletionPolicy" : "Snapshot"
+    },
+    "DBSubnetGroup": {
+      "Type": "AWS::RDS::DBSubnetGroup",
+      "Properties": {
+        "DBSubnetGroupDescription": "default",
+        "SubnetIds": { "Ref": "SubnetID" }
+      }
+    },
+    "SSMSSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "Enable SSMS only",
+        "VpcId": { "Ref": "VpcId" }
+      }
+    },
+    "ingress2": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "SSMSSecurityGroup"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": "1433",
+        "ToPort": "1433",
+        "SourceSecurityGroupId": {"Fn::GetAtt" : ["EC2InstanceSecurityGroup", "GroupId"]}
+      }
+    },
+    "ingress3": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "SSMSSecurityGroup"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": "1433",
+        "ToPort": "1433",
+        "CidrIp": { "Ref" : "AdminCidr" }
+      }
+    },
+    "egress2": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "SSMSSecurityGroup"
+        },
+        "IpProtocol": "-1",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+
+    "EC2InstanceSecurityGroup" : {
+          "Type" : "AWS::EC2::SecurityGroup",
+          "Properties" : {
+            "GroupDescription" : "Enable RDP, and HTTP from the load balancer only",
+            "SecurityGroupIngress" : [
+    		{
+    		  "IpProtocol" : "tcp",
+    		  "FromPort" : "3389",
+    		  "ToPort" : "3389",
+    		  "CidrIp" : { "Ref" : "AdminCidr" }
+    		}
+        ]
+      }
+    }
+},
+
+  "Outputs" : {
+
+    "AccessSecurityGroup": {
+      "Description": "This security group must be attached to anyone who wants access to this database",
+      "Value": { "Ref": "SSMSSecurityGroup" }
+    }
+  }
+}
