@@ -1,0 +1,28 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: external-dns
+spec:
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: external-dns
+    spec:
+      containers:
+      - name: external-dns
+        image: registry.opensource.zalan.do/teapot/external-dns:v0.4.4
+        imagePullPolicy: Always
+        args:
+        - --domain-filter=$(DOMAIN_FILTER)
+        - --source=service
+        - --source=ingress
+        - --provider=aws
+        env:
+        - name: DOMAIN_FILTER
+          valueFrom:
+            configMapKeyRef:
+              name: external-dns
+              key: domain-filter

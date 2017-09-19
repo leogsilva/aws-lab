@@ -5,8 +5,8 @@
 
 Master:
   Name: jenkins-master
-  Image: "jenkins/jenkins"
-  ImageTag: "2.60.3-alpine"
+  Image: "jenkinsci/jenkins"
+  ImageTag: "2.60.1"
   ImagePullPolicy: "Always"
   Component: "jenkins-master"
   UseSecurity: true
@@ -42,15 +42,11 @@ Master:
       - workflow-job:2.11
       - workflow-multibranch:2.16
       - workflow-cps:2.36
-      - credentials-binding:1.12
+      - credentials-binding:1.11
       - git:3.2.0
       - ec2:1.36
       - swarm:3.4
-      - test-results-analyzer:0.3.4
-      - slack:2.2
-      - pipeline-github-lib:1.0
-      - ghprb:1.39.0
-  # Used to approve a list of groovy functions in pipelines used the script-security plugin. Can be viewed under /scriptApproval
+# Used to approve a list of groovy functions in pipelines used the script-security plugin. Can be viewed under /scriptApproval
   # ScriptApproval:
   #   - "method groovy.json.JsonSlurperClassic parseText java.lang.String"
   #   - "new groovy.json.JsonSlurperClassic"

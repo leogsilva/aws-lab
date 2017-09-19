@@ -1,0 +1,830 @@
+{
+  "Resources": {
+    "AWSAutoScalingAutoScalingGroupmasteruseast1amastersappsleiteiroappcom": {
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "Properties": {
+        "LaunchConfigurationName": {
+          "Ref": "AWSAutoScalingLaunchConfigurationmasteruseast1amastersappsleiteiroappcom"
+        },
+        "MaxSize": 1,
+        "MinSize": 1,
+        "VPCZoneIdentifier": [
+          {
+            "Ref": "AWSEC2Subnetuseast1aappsleiteiroappcom"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "apps.leiteiroapp.com",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "Name",
+            "Value": "master-us-east-1a.masters.apps.leiteiroapp.com",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "environment",
+            "Value": "lab",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "k8s.io/role/master",
+            "Value": "1",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "owner",
+            "Value": "inovacao",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "scheduler:ec2-startstop",
+            "Value": "1000;2200;utc;weekdays",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "solution",
+            "Value": "tools",
+            "PropagateAtLaunch": true
+          }
+        ]
+      }
+    },
+    "AWSAutoScalingAutoScalingGroupnodesappsleiteiroappcom": {
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "Properties": {
+        "LaunchConfigurationName": {
+          "Ref": "AWSAutoScalingLaunchConfigurationnodesappsleiteiroappcom"
+        },
+        "MaxSize": 1,
+        "MinSize": 1,
+        "VPCZoneIdentifier": [
+          {
+            "Ref": "AWSEC2Subnetuseast1aappsleiteiroappcom"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "apps.leiteiroapp.com",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "Name",
+            "Value": "nodes.apps.leiteiroapp.com",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "environment",
+            "Value": "lab",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "k8s.io/role/node",
+            "Value": "1",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "owner",
+            "Value": "inovacao",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "scheduler:ec2-startstop",
+            "Value": "1000;2200;utc;weekdays",
+            "PropagateAtLaunch": true
+          },
+          {
+            "Key": "solution",
+            "Value": "tools",
+            "PropagateAtLaunch": true
+          }
+        ]
+      }
+    },
+    "AWSAutoScalingLaunchConfigurationmasteruseast1amastersappsleiteiroappcom": {
+      "Type": "AWS::AutoScaling::LaunchConfiguration",
+      "Properties": {
+        "AssociatePublicIpAddress": true,
+        "BlockDeviceMappings": [
+          {
+            "DeviceName": "/dev/xvda",
+            "Ebs": {
+              "VolumeType": "gp2",
+              "VolumeSize": 64,
+              "DeleteOnTermination": true
+            }
+          }
+        ],
+        "IamInstanceProfile": {
+          "Ref": "AWSIAMInstanceProfilemastersappsleiteiroappcom"
+        },
+        "ImageId": "ami-08431d73",
+        "InstanceType": "t2.micro",
+        "KeyName": "kubernetes.apps.leiteiroapp.com-c3:5c:94:87:17:7d:23:2c:f7:05:65:06:8f:d6:93:89",
+        "SecurityGroups": [
+          {
+            "Ref": "AWSEC2SecurityGroupmastersappsleiteiroappcom"
+          }
+        ],
+        "UserData": "IyEvYmluL2Jhc2gKIyBDb3B5cmlnaHQgMjAxNiBUaGUgS3ViZXJuZXRlcyBBdXRob3JzIEFsbCByaWdodHMgcmVzZXJ2ZWQuCiMKIyBMaWNlbnNlZCB1bmRlciB0aGUgQXBhY2hlIExpY2Vuc2UsIFZlcnNpb24gMi4wICh0aGUgIkxpY2Vuc2UiKTsKIyB5b3UgbWF5IG5vdCB1c2UgdGhpcyBmaWxlIGV4Y2VwdCBpbiBjb21wbGlhbmNlIHdpdGggdGhlIExpY2Vuc2UuCiMgWW91IG1heSBvYnRhaW4gYSBjb3B5IG9mIHRoZSBMaWNlbnNlIGF0CiMKIyAgICAgaHR0cDovL3d3dy5hcGFjaGUub3JnL2xpY2Vuc2VzL0xJQ0VOU0UtMi4wCiMKIyBVbmxlc3MgcmVxdWlyZWQgYnkgYXBwbGljYWJsZSBsYXcgb3IgYWdyZWVkIHRvIGluIHdyaXRpbmcsIHNvZnR3YXJlCiMgZGlzdHJpYnV0ZWQgdW5kZXIgdGhlIExpY2Vuc2UgaXMgZGlzdHJpYnV0ZWQgb24gYW4gIkFTIElTIiBCQVNJUywKIyBXSVRIT1VUIFdBUlJBTlRJRVMgT1IgQ09ORElUSU9OUyBPRiBBTlkgS0lORCwgZWl0aGVyIGV4cHJlc3Mgb3IgaW1wbGllZC4KIyBTZWUgdGhlIExpY2Vuc2UgZm9yIHRoZSBzcGVjaWZpYyBsYW5ndWFnZSBnb3Zlcm5pbmcgcGVybWlzc2lvbnMgYW5kCiMgbGltaXRhdGlvbnMgdW5kZXIgdGhlIExpY2Vuc2UuCgpzZXQgLW8gZXJyZXhpdApzZXQgLW8gbm91bnNldApzZXQgLW8gcGlwZWZhaWwKCk5PREVVUF9VUkw9aHR0cHM6Ly9rdWJldXB2Mi5zMy5hbWF6b25hd3MuY29tL2tvcHMvMS43LjAvbGludXgvYW1kNjQvbm9kZXVwCk5PREVVUF9IQVNIPQoKCgoKZnVuY3Rpb24gZW5zdXJlLWluc3RhbGwtZGlyKCkgewogIElOU1RBTExfRElSPSIvdmFyL2NhY2hlL2t1YmVybmV0ZXMtaW5zdGFsbCIKICAjIE9uIENvbnRhaW5lck9TLCB3ZSBpbnN0YWxsIHRvIC92YXIvbGliL3Rvb2xib3ggaW5zdGFsbCAoYmVjYXVzZSBvZiBub2V4ZWMpCiAgaWYgW1sgLWQgL3Zhci9saWIvdG9vbGJveCBdXTsgdGhlbgogICAgSU5TVEFMTF9ESVI9Ii92YXIvbGliL3Rvb2xib3gva3ViZXJuZXRlcy1pbnN0YWxsIgogIGZpCiAgbWtkaXIgLXAgJHtJTlNUQUxMX0RJUn0KICBjZCAke0lOU1RBTExfRElSfQp9CgojIFJldHJ5IGEgZG93bmxvYWQgdW50aWwgd2UgZ2V0IGl0LiBUYWtlcyBhIGhhc2ggYW5kIGEgc2V0IG9mIFVSTHMuCiMKIyAkMSBpcyB0aGUgc2hhMSBvZiB0aGUgVVJMLiBDYW4gYmUgIiIgaWYgdGhlIHNoYTEgaXMgdW5rbm93bi4KIyAkMisgYXJlIHRoZSBVUkxzIHRvIGRvd25sb2FkLgpkb3dubG9hZC1vci1idXN0KCkgewogIGxvY2FsIC1yIGhhc2g9IiQxIgogIHNoaWZ0IDEKCiAgdXJscz0oICQqICkKICB3aGlsZSB0cnVlOyBkbwogICAgZm9yIHVybCBpbiAiJHt1cmxzW0BdfSI7IGRvCiAgICAgIGxvY2FsIGZpbGU9IiR7dXJsIyMqL30iCiAgICAgIHJtIC1mICIke2ZpbGV9IgogICAgICBpZiAhIGN1cmwgLWYgLS1pcHY0IC1MbyAiJHtmaWxlfSIgLS1jb25uZWN0LXRpbWVvdXQgMjAgLS1yZXRyeSA2IC0tcmV0cnktZGVsYXkgMTAgIiR7dXJsfSI7IHRoZW4KICAgICAgICBlY2hvICI9PSBGYWlsZWQgdG8gZG93bmxvYWQgJHt1cmx9LiBSZXRyeWluZy4gPT0iCiAgICAgIGVsaWYgW1sgLW4gIiR7aGFzaH0iIF1dICYmICEgdmFsaWRhdGUtaGFzaCAiJHtmaWxlfSIgIiR7aGFzaH0iOyB0aGVuCiAgICAgICAgZWNobyAiPT0gSGFzaCB2YWxpZGF0aW9uIG9mICR7dXJsfSBmYWlsZWQuIFJldHJ5aW5nLiA9PSIKICAgICAgZWxzZQogICAgICAgIGlmIFtbIC1uICIke2hhc2h9IiBdXTsgdGhlbgogICAgICAgICAgZWNobyAiPT0gRG93bmxvYWRlZCAke3VybH0gKFNIQTEgPSAke2hhc2h9KSA9PSIKICAgICAgICBlbHNlCiAgICAgICAgICBlY2hvICI9PSBEb3dubG9hZGVkICR7dXJsfSA9PSIKICAgICAgICBmaQogICAgICAgIHJldHVybgogICAgICBmaQogICAgZG9uZQoKICAgIGVjaG8gIkFsbCBkb3dubG9hZHMgZmFpbGVkOyBzbGVlcGluZyBiZWZvcmUgcmV0cnlpbmciCiAgICBzbGVlcCA2MAogIGRvbmUKfQoKdmFsaWRhdGUtaGFzaCgpIHsKICBsb2NhbCAtciBmaWxlPSIkMSIKICBsb2NhbCAtciBleHBlY3RlZD0iJDIiCiAgbG9jYWwgYWN0dWFsCgogIGFjdHVhbD0kKHNoYTFzdW0gJHtmaWxlfSB8IGF3ayAneyBwcmludCAkMSB9JykgfHwgdHJ1ZQogIGlmIFtbICIke2FjdHVhbH0iICE9ICIke2V4cGVjdGVkfSIgXV07IHRoZW4KICAgIGVjaG8gIj09ICR7ZmlsZX0gY29ycnVwdGVkLCBzaGExICR7YWN0dWFsfSBkb2Vzbid0IG1hdGNoIGV4cGVjdGVkICR7ZXhwZWN0ZWR9ID09IgogICAgcmV0dXJuIDEKICBmaQp9CgpmdW5jdGlvbiBzcGxpdC1jb21tYXMoKSB7CiAgZWNobyAkMSB8IHRyICIsIiAiXG4iCn0KCmZ1bmN0aW9uIHRyeS1kb3dubG9hZC1yZWxlYXNlKCkgewogICMgVE9ETyh6bWVybHlubik6IE5vdyB3ZSBSRUFMTFkgaGF2ZSBubyBleGN1c2Ugbm90IHRvIGRvIHRoZSByZWJvb3QKICAjIG9wdGltaXphdGlvbi4KCiAgbG9jYWwgLXIgbm9kZXVwX3VybHM9KCAkKHNwbGl0LWNvbW1hcyAiJHtOT0RFVVBfVVJMfSIpICkKICBsb2NhbCAtciBub2RldXBfZmlsZW5hbWU9IiR7bm9kZXVwX3VybHNbMF0jIyovfSIKICBpZiBbWyAtbiAiJHtOT0RFVVBfSEFTSDotfSIgXV07IHRoZW4KICAgIGxvY2FsIC1yIG5vZGV1cF9oYXNoPSIke05PREVVUF9IQVNIfSIKICBlbHNlCiAgIyBUT0RPOiBSZW1vdmU/CiAgICBlY2hvICJEb3dubG9hZGluZyBzaGExIChub3QgZm91bmQgaW4gZW52KSIKICAgIGRvd25sb2FkLW9yLWJ1c3QgIiIgIiR7bm9kZXVwX3VybHNbQF0vJS8uc2hhMX0iCiAgICBsb2NhbCAtciBub2RldXBfaGFzaD0kKGNhdCAiJHtub2RldXBfZmlsZW5hbWV9LnNoYTEiKQogIGZpCgogIGVjaG8gIkRvd25sb2FkaW5nIG5vZGV1cCAoJHtub2RldXBfdXJsc1tAXX0pIgogIGRvd25sb2FkLW9yLWJ1c3QgIiR7bm9kZXVwX2hhc2h9IiAiJHtub2RldXBfdXJsc1tAXX0iCgogIGNobW9kICt4IG5vZGV1cAp9CgpmdW5jdGlvbiBkb3dubG9hZC1yZWxlYXNlKCkgewogICMgSW4gY2FzZSBvZiBmYWlsdXJlIGNoZWNraW5nIGludGVncml0eSBvZiByZWxlYXNlLCByZXRyeS4KICB1bnRpbCB0cnktZG93bmxvYWQtcmVsZWFzZTsgZG8KICAgIHNsZWVwIDE1CiAgICBlY2hvICJDb3VsZG4ndCBkb3dubG9hZCByZWxlYXNlLiBSZXRyeWluZy4uLiIKICBkb25lCgogIGVjaG8gIlJ1bm5pbmcgbm9kZXVwIgogICMgV2UgY2FuJ3QgcnVuIGluIHRoZSBmb3JlZ3JvdW5kIGJlY2F1c2Ugb2YgaHR0cHM6Ly9naXRodWIuY29tL2RvY2tlci9kb2NrZXIvaXNzdWVzLzIzNzkzCiAgKCBjZCAke0lOU1RBTExfRElSfTsgLi9ub2RldXAgLS1pbnN0YWxsLXN5c3RlbWQtdW5pdCAtLWNvbmY9JHtJTlNUQUxMX0RJUn0va3ViZV9lbnYueWFtbCAtLXY9OCAgKQp9CgojIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKCi9iaW4vc3lzdGVtZC1tYWNoaW5lLWlkLXNldHVwIHx8IGVjaG8gImZhaWxlZCB0byBzZXQgdXAgZW5zdXJlIG1hY2hpbmUtaWQgY29uZmlndXJlZCIKCmVjaG8gIj09IG5vZGV1cCBub2RlIGNvbmZpZyBzdGFydGluZyA9PSIKZW5zdXJlLWluc3RhbGwtZGlyCgpjYXQgPiBrdWJlX2Vudi55YW1sIDw8IF9fRU9GX0tVQkVfRU5WCkFzc2V0czoKLSBiYWQ0MjRlZWUzMjFmNGM5YjJiODAwZDQ0ZGUyZTE3ODk4NDNkYTE5QGh0dHBzOi8vc3RvcmFnZS5nb29nbGVhcGlzLmNvbS9rdWJlcm5ldGVzLXJlbGVhc2UvcmVsZWFzZS92MS43LjIvYmluL2xpbnV4L2FtZDY0L2t1YmVsZXQKLSBjZTg4MDJkY2NjMWFhNWNmZmExNWEwNGVlZTgzMjZiYTVjOTExZDMyQGh0dHBzOi8vc3RvcmFnZS5nb29nbGVhcGlzLmNvbS9rdWJlcm5ldGVzLXJlbGVhc2UvcmVsZWFzZS92MS43LjIvYmluL2xpbnV4L2FtZDY0L2t1YmVjdGwKLSAxZDk3ODhiMGY1NDIwZTFhMjE5YWFkMmNiODY4MTgyM2ZjNTE1ZTdjQGh0dHBzOi8vc3RvcmFnZS5nb29nbGVhcGlzLmNvbS9rdWJlcm5ldGVzLXJlbGVhc2UvbmV0d29yay1wbHVnaW5zL2NuaS0wNzk5ZjU3MzJmMmExMWIzMjlkOWUzZDUxYjljOGYyZTM3NTlmMmZmLnRhci5negotIDVkOTVkNjRkNzEzNGYyMDJiYTYwYjFmYTE0YWRhZmYxMzg5MDVkMTVAaHR0cHM6Ly9rdWJldXB2Mi5zMy5hbWF6b25hd3MuY29tL2tvcHMvMS43LjAvbGludXgvYW1kNjQvdXRpbHMudGFyLmd6CkNsdXN0ZXJOYW1lOiBhcHBzLmxlaXRlaXJvYXBwLmNvbQpDb25maWdCYXNlOiBzMzovL2NvbS1sZWl0ZWlyb2FwcC1rb3BzLWFwcHMtc3RhdGUtc3RvcmUvYXBwcy5sZWl0ZWlyb2FwcC5jb20KSW5zdGFuY2VHcm91cE5hbWU6IG1hc3Rlci11cy1lYXN0LTFhClRhZ3M6Ci0gX2F1dG9tYXRpY191cGdyYWRlcwotIF9hd3MKLSBfa3ViZXJuZXRlc19tYXN0ZXIKLSBfbmV0d29ya2luZ19jbmkKY2hhbm5lbHM6Ci0gczM6Ly9jb20tbGVpdGVpcm9hcHAta29wcy1hcHBzLXN0YXRlLXN0b3JlL2FwcHMubGVpdGVpcm9hcHAuY29tL2FkZG9ucy9ib290c3RyYXAtY2hhbm5lbC55YW1sCnByb3Rva3ViZUltYWdlOgogIGhhc2g6IDViZDk3YTAyZjA3OTNkMTkwNmU5ZjQ0NmM1NDhlY2VjZjE0NDQ3MzcKICBuYW1lOiBwcm90b2t1YmU6MS43LjAKICBzb3VyY2U6IGh0dHBzOi8va3ViZXVwdjIuczMuYW1hem9uYXdzLmNvbS9rb3BzLzEuNy4wL2ltYWdlcy9wcm90b2t1YmUudGFyLmd6CgpfX0VPRl9LVUJFX0VOVgoKZG93bmxvYWQtcmVsZWFzZQplY2hvICI9PSBub2RldXAgbm9kZSBjb25maWcgZG9uZSA9PSIK"
+      }
+    },
+    "AWSAutoScalingLaunchConfigurationnodesappsleiteiroappcom": {
+      "Type": "AWS::AutoScaling::LaunchConfiguration",
+      "Properties": {
+        "AssociatePublicIpAddress": true,
+        "BlockDeviceMappings": [
+          {
+            "DeviceName": "/dev/xvda",
+            "Ebs": {
+              "VolumeType": "gp2",
+              "VolumeSize": 128,
+              "DeleteOnTermination": true
+            }
+          }
+        ],
+        "IamInstanceProfile": {
+          "Ref": "AWSIAMInstanceProfilenodesappsleiteiroappcom"
+        },
+        "ImageId": "ami-08431d73",
+        "InstanceType": "t2.medium",
+        "KeyName": "kubernetes.apps.leiteiroapp.com-c3:5c:94:87:17:7d:23:2c:f7:05:65:06:8f:d6:93:89",
+        "SecurityGroups": [
+          {
+            "Ref": "AWSEC2SecurityGroupnodesappsleiteiroappcom"
+          }
+        ],
+        "UserData": "IyEvYmluL2Jhc2gKIyBDb3B5cmlnaHQgMjAxNiBUaGUgS3ViZXJuZXRlcyBBdXRob3JzIEFsbCByaWdodHMgcmVzZXJ2ZWQuCiMKIyBMaWNlbnNlZCB1bmRlciB0aGUgQXBhY2hlIExpY2Vuc2UsIFZlcnNpb24gMi4wICh0aGUgIkxpY2Vuc2UiKTsKIyB5b3UgbWF5IG5vdCB1c2UgdGhpcyBmaWxlIGV4Y2VwdCBpbiBjb21wbGlhbmNlIHdpdGggdGhlIExpY2Vuc2UuCiMgWW91IG1heSBvYnRhaW4gYSBjb3B5IG9mIHRoZSBMaWNlbnNlIGF0CiMKIyAgICAgaHR0cDovL3d3dy5hcGFjaGUub3JnL2xpY2Vuc2VzL0xJQ0VOU0UtMi4wCiMKIyBVbmxlc3MgcmVxdWlyZWQgYnkgYXBwbGljYWJsZSBsYXcgb3IgYWdyZWVkIHRvIGluIHdyaXRpbmcsIHNvZnR3YXJlCiMgZGlzdHJpYnV0ZWQgdW5kZXIgdGhlIExpY2Vuc2UgaXMgZGlzdHJpYnV0ZWQgb24gYW4gIkFTIElTIiBCQVNJUywKIyBXSVRIT1VUIFdBUlJBTlRJRVMgT1IgQ09ORElUSU9OUyBPRiBBTlkgS0lORCwgZWl0aGVyIGV4cHJlc3Mgb3IgaW1wbGllZC4KIyBTZWUgdGhlIExpY2Vuc2UgZm9yIHRoZSBzcGVjaWZpYyBsYW5ndWFnZSBnb3Zlcm5pbmcgcGVybWlzc2lvbnMgYW5kCiMgbGltaXRhdGlvbnMgdW5kZXIgdGhlIExpY2Vuc2UuCgpzZXQgLW8gZXJyZXhpdApzZXQgLW8gbm91bnNldApzZXQgLW8gcGlwZWZhaWwKCk5PREVVUF9VUkw9aHR0cHM6Ly9rdWJldXB2Mi5zMy5hbWF6b25hd3MuY29tL2tvcHMvMS43LjAvbGludXgvYW1kNjQvbm9kZXVwCk5PREVVUF9IQVNIPQoKCgoKZnVuY3Rpb24gZW5zdXJlLWluc3RhbGwtZGlyKCkgewogIElOU1RBTExfRElSPSIvdmFyL2NhY2hlL2t1YmVybmV0ZXMtaW5zdGFsbCIKICAjIE9uIENvbnRhaW5lck9TLCB3ZSBpbnN0YWxsIHRvIC92YXIvbGliL3Rvb2xib3ggaW5zdGFsbCAoYmVjYXVzZSBvZiBub2V4ZWMpCiAgaWYgW1sgLWQgL3Zhci9saWIvdG9vbGJveCBdXTsgdGhlbgogICAgSU5TVEFMTF9ESVI9Ii92YXIvbGliL3Rvb2xib3gva3ViZXJuZXRlcy1pbnN0YWxsIgogIGZpCiAgbWtkaXIgLXAgJHtJTlNUQUxMX0RJUn0KICBjZCAke0lOU1RBTExfRElSfQp9CgojIFJldHJ5IGEgZG93bmxvYWQgdW50aWwgd2UgZ2V0IGl0LiBUYWtlcyBhIGhhc2ggYW5kIGEgc2V0IG9mIFVSTHMuCiMKIyAkMSBpcyB0aGUgc2hhMSBvZiB0aGUgVVJMLiBDYW4gYmUgIiIgaWYgdGhlIHNoYTEgaXMgdW5rbm93bi4KIyAkMisgYXJlIHRoZSBVUkxzIHRvIGRvd25sb2FkLgpkb3dubG9hZC1vci1idXN0KCkgewogIGxvY2FsIC1yIGhhc2g9IiQxIgogIHNoaWZ0IDEKCiAgdXJscz0oICQqICkKICB3aGlsZSB0cnVlOyBkbwogICAgZm9yIHVybCBpbiAiJHt1cmxzW0BdfSI7IGRvCiAgICAgIGxvY2FsIGZpbGU9IiR7dXJsIyMqL30iCiAgICAgIHJtIC1mICIke2ZpbGV9IgogICAgICBpZiAhIGN1cmwgLWYgLS1pcHY0IC1MbyAiJHtmaWxlfSIgLS1jb25uZWN0LXRpbWVvdXQgMjAgLS1yZXRyeSA2IC0tcmV0cnktZGVsYXkgMTAgIiR7dXJsfSI7IHRoZW4KICAgICAgICBlY2hvICI9PSBGYWlsZWQgdG8gZG93bmxvYWQgJHt1cmx9LiBSZXRyeWluZy4gPT0iCiAgICAgIGVsaWYgW1sgLW4gIiR7aGFzaH0iIF1dICYmICEgdmFsaWRhdGUtaGFzaCAiJHtmaWxlfSIgIiR7aGFzaH0iOyB0aGVuCiAgICAgICAgZWNobyAiPT0gSGFzaCB2YWxpZGF0aW9uIG9mICR7dXJsfSBmYWlsZWQuIFJldHJ5aW5nLiA9PSIKICAgICAgZWxzZQogICAgICAgIGlmIFtbIC1uICIke2hhc2h9IiBdXTsgdGhlbgogICAgICAgICAgZWNobyAiPT0gRG93bmxvYWRlZCAke3VybH0gKFNIQTEgPSAke2hhc2h9KSA9PSIKICAgICAgICBlbHNlCiAgICAgICAgICBlY2hvICI9PSBEb3dubG9hZGVkICR7dXJsfSA9PSIKICAgICAgICBmaQogICAgICAgIHJldHVybgogICAgICBmaQogICAgZG9uZQoKICAgIGVjaG8gIkFsbCBkb3dubG9hZHMgZmFpbGVkOyBzbGVlcGluZyBiZWZvcmUgcmV0cnlpbmciCiAgICBzbGVlcCA2MAogIGRvbmUKfQoKdmFsaWRhdGUtaGFzaCgpIHsKICBsb2NhbCAtciBmaWxlPSIkMSIKICBsb2NhbCAtciBleHBlY3RlZD0iJDIiCiAgbG9jYWwgYWN0dWFsCgogIGFjdHVhbD0kKHNoYTFzdW0gJHtmaWxlfSB8IGF3ayAneyBwcmludCAkMSB9JykgfHwgdHJ1ZQogIGlmIFtbICIke2FjdHVhbH0iICE9ICIke2V4cGVjdGVkfSIgXV07IHRoZW4KICAgIGVjaG8gIj09ICR7ZmlsZX0gY29ycnVwdGVkLCBzaGExICR7YWN0dWFsfSBkb2Vzbid0IG1hdGNoIGV4cGVjdGVkICR7ZXhwZWN0ZWR9ID09IgogICAgcmV0dXJuIDEKICBmaQp9CgpmdW5jdGlvbiBzcGxpdC1jb21tYXMoKSB7CiAgZWNobyAkMSB8IHRyICIsIiAiXG4iCn0KCmZ1bmN0aW9uIHRyeS1kb3dubG9hZC1yZWxlYXNlKCkgewogICMgVE9ETyh6bWVybHlubik6IE5vdyB3ZSBSRUFMTFkgaGF2ZSBubyBleGN1c2Ugbm90IHRvIGRvIHRoZSByZWJvb3QKICAjIG9wdGltaXphdGlvbi4KCiAgbG9jYWwgLXIgbm9kZXVwX3VybHM9KCAkKHNwbGl0LWNvbW1hcyAiJHtOT0RFVVBfVVJMfSIpICkKICBsb2NhbCAtciBub2RldXBfZmlsZW5hbWU9IiR7bm9kZXVwX3VybHNbMF0jIyovfSIKICBpZiBbWyAtbiAiJHtOT0RFVVBfSEFTSDotfSIgXV07IHRoZW4KICAgIGxvY2FsIC1yIG5vZGV1cF9oYXNoPSIke05PREVVUF9IQVNIfSIKICBlbHNlCiAgIyBUT0RPOiBSZW1vdmU/CiAgICBlY2hvICJEb3dubG9hZGluZyBzaGExIChub3QgZm91bmQgaW4gZW52KSIKICAgIGRvd25sb2FkLW9yLWJ1c3QgIiIgIiR7bm9kZXVwX3VybHNbQF0vJS8uc2hhMX0iCiAgICBsb2NhbCAtciBub2RldXBfaGFzaD0kKGNhdCAiJHtub2RldXBfZmlsZW5hbWV9LnNoYTEiKQogIGZpCgogIGVjaG8gIkRvd25sb2FkaW5nIG5vZGV1cCAoJHtub2RldXBfdXJsc1tAXX0pIgogIGRvd25sb2FkLW9yLWJ1c3QgIiR7bm9kZXVwX2hhc2h9IiAiJHtub2RldXBfdXJsc1tAXX0iCgogIGNobW9kICt4IG5vZGV1cAp9CgpmdW5jdGlvbiBkb3dubG9hZC1yZWxlYXNlKCkgewogICMgSW4gY2FzZSBvZiBmYWlsdXJlIGNoZWNraW5nIGludGVncml0eSBvZiByZWxlYXNlLCByZXRyeS4KICB1bnRpbCB0cnktZG93bmxvYWQtcmVsZWFzZTsgZG8KICAgIHNsZWVwIDE1CiAgICBlY2hvICJDb3VsZG4ndCBkb3dubG9hZCByZWxlYXNlLiBSZXRyeWluZy4uLiIKICBkb25lCgogIGVjaG8gIlJ1bm5pbmcgbm9kZXVwIgogICMgV2UgY2FuJ3QgcnVuIGluIHRoZSBmb3JlZ3JvdW5kIGJlY2F1c2Ugb2YgaHR0cHM6Ly9naXRodWIuY29tL2RvY2tlci9kb2NrZXIvaXNzdWVzLzIzNzkzCiAgKCBjZCAke0lOU1RBTExfRElSfTsgLi9ub2RldXAgLS1pbnN0YWxsLXN5c3RlbWQtdW5pdCAtLWNvbmY9JHtJTlNUQUxMX0RJUn0va3ViZV9lbnYueWFtbCAtLXY9OCAgKQp9CgojIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKCi9iaW4vc3lzdGVtZC1tYWNoaW5lLWlkLXNldHVwIHx8IGVjaG8gImZhaWxlZCB0byBzZXQgdXAgZW5zdXJlIG1hY2hpbmUtaWQgY29uZmlndXJlZCIKCmVjaG8gIj09IG5vZGV1cCBub2RlIGNvbmZpZyBzdGFydGluZyA9PSIKZW5zdXJlLWluc3RhbGwtZGlyCgpjYXQgPiBrdWJlX2Vudi55YW1sIDw8IF9fRU9GX0tVQkVfRU5WCkFzc2V0czoKLSBiYWQ0MjRlZWUzMjFmNGM5YjJiODAwZDQ0ZGUyZTE3ODk4NDNkYTE5QGh0dHBzOi8vc3RvcmFnZS5nb29nbGVhcGlzLmNvbS9rdWJlcm5ldGVzLXJlbGVhc2UvcmVsZWFzZS92MS43LjIvYmluL2xpbnV4L2FtZDY0L2t1YmVsZXQKLSBjZTg4MDJkY2NjMWFhNWNmZmExNWEwNGVlZTgzMjZiYTVjOTExZDMyQGh0dHBzOi8vc3RvcmFnZS5nb29nbGVhcGlzLmNvbS9rdWJlcm5ldGVzLXJlbGVhc2UvcmVsZWFzZS92MS43LjIvYmluL2xpbnV4L2FtZDY0L2t1YmVjdGwKLSAxZDk3ODhiMGY1NDIwZTFhMjE5YWFkMmNiODY4MTgyM2ZjNTE1ZTdjQGh0dHBzOi8vc3RvcmFnZS5nb29nbGVhcGlzLmNvbS9rdWJlcm5ldGVzLXJlbGVhc2UvbmV0d29yay1wbHVnaW5zL2NuaS0wNzk5ZjU3MzJmMmExMWIzMjlkOWUzZDUxYjljOGYyZTM3NTlmMmZmLnRhci5negotIDVkOTVkNjRkNzEzNGYyMDJiYTYwYjFmYTE0YWRhZmYxMzg5MDVkMTVAaHR0cHM6Ly9rdWJldXB2Mi5zMy5hbWF6b25hd3MuY29tL2tvcHMvMS43LjAvbGludXgvYW1kNjQvdXRpbHMudGFyLmd6CkNsdXN0ZXJOYW1lOiBhcHBzLmxlaXRlaXJvYXBwLmNvbQpDb25maWdCYXNlOiBzMzovL2NvbS1sZWl0ZWlyb2FwcC1rb3BzLWFwcHMtc3RhdGUtc3RvcmUvYXBwcy5sZWl0ZWlyb2FwcC5jb20KSW5zdGFuY2VHcm91cE5hbWU6IG5vZGVzClRhZ3M6Ci0gX2F1dG9tYXRpY191cGdyYWRlcwotIF9hd3MKLSBfbmV0d29ya2luZ19jbmkKY2hhbm5lbHM6Ci0gczM6Ly9jb20tbGVpdGVpcm9hcHAta29wcy1hcHBzLXN0YXRlLXN0b3JlL2FwcHMubGVpdGVpcm9hcHAuY29tL2FkZG9ucy9ib290c3RyYXAtY2hhbm5lbC55YW1sCnByb3Rva3ViZUltYWdlOgogIGhhc2g6IDViZDk3YTAyZjA3OTNkMTkwNmU5ZjQ0NmM1NDhlY2VjZjE0NDQ3MzcKICBuYW1lOiBwcm90b2t1YmU6MS43LjAKICBzb3VyY2U6IGh0dHBzOi8va3ViZXVwdjIuczMuYW1hem9uYXdzLmNvbS9rb3BzLzEuNy4wL2ltYWdlcy9wcm90b2t1YmUudGFyLmd6CgpfX0VPRl9LVUJFX0VOVgoKZG93bmxvYWQtcmVsZWFzZQplY2hvICI9PSBub2RldXAgbm9kZSBjb25maWcgZG9uZSA9PSIK"
+      }
+    },
+    "AWSEC2DHCPOptionsappsleiteiroappcom": {
+      "Type": "AWS::EC2::DHCPOptions",
+      "Properties": {
+        "DomainName": "ec2.internal",
+        "DomainNameServers": [
+          "AmazonProvidedDNS"
+        ],
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "apps.leiteiroapp.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "apps.leiteiroapp.com"
+          }
+        ]
+      }
+    },
+    "AWSEC2InternetGatewayappsleiteiroappcom": {
+      "Type": "AWS::EC2::InternetGateway",
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "apps.leiteiroapp.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "apps.leiteiroapp.com"
+          }
+        ]
+      }
+    },
+    "AWSEC2Route00000": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "AWSEC2RouteTableappsleiteiroappcom"
+        },
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": {
+          "Ref": "AWSEC2InternetGatewayappsleiteiroappcom"
+        }
+      }
+    },
+    "AWSEC2RouteTableappsleiteiroappcom": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCappsleiteiroappcom"
+        },
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "apps.leiteiroapp.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "apps.leiteiroapp.com"
+          }
+        ]
+      }
+    },
+    "AWSEC2SecurityGroupEgressmasteregress": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersappsleiteiroappcom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupEgressnodeegress": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesappsleiteiroappcom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupIngressallmastertomaster": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersappsleiteiroappcom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersappsleiteiroappcom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1"
+      }
+    },
+    "AWSEC2SecurityGroupIngressallmastertonode": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesappsleiteiroappcom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersappsleiteiroappcom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1"
+      }
+    },
+    "AWSEC2SecurityGroupIngressallnodetonode": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesappsleiteiroappcom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesappsleiteiroappcom"
+        },
+        "FromPort": 0,
+        "ToPort": 0,
+        "IpProtocol": "-1"
+      }
+    },
+    "AWSEC2SecurityGroupIngresshttpsexternaltomaster00000": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersappsleiteiroappcom"
+        },
+        "FromPort": 443,
+        "ToPort": 443,
+        "IpProtocol": "tcp",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupIngressnodetomastertcp14000": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersappsleiteiroappcom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesappsleiteiroappcom"
+        },
+        "FromPort": 1,
+        "ToPort": 4000,
+        "IpProtocol": "tcp"
+      }
+    },
+    "AWSEC2SecurityGroupIngressnodetomastertcp400365535": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersappsleiteiroappcom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesappsleiteiroappcom"
+        },
+        "FromPort": 4003,
+        "ToPort": 65535,
+        "IpProtocol": "tcp"
+      }
+    },
+    "AWSEC2SecurityGroupIngressnodetomasterudp165535": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersappsleiteiroappcom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesappsleiteiroappcom"
+        },
+        "FromPort": 1,
+        "ToPort": 65535,
+        "IpProtocol": "udp"
+      }
+    },
+    "AWSEC2SecurityGroupIngresssshexternaltomaster00000": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersappsleiteiroappcom"
+        },
+        "FromPort": 22,
+        "ToPort": 22,
+        "IpProtocol": "tcp",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupIngresssshexternaltonode00000": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesappsleiteiroappcom"
+        },
+        "FromPort": 22,
+        "ToPort": 22,
+        "IpProtocol": "tcp",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "AWSEC2SecurityGroupmastersappsleiteiroappcom": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCappsleiteiroappcom"
+        },
+        "GroupDescription": "Security group for masters",
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "apps.leiteiroapp.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "masters.apps.leiteiroapp.com"
+          }
+        ]
+      }
+    },
+    "AWSEC2SecurityGroupnodesappsleiteiroappcom": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCappsleiteiroappcom"
+        },
+        "GroupDescription": "Security group for nodes",
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "apps.leiteiroapp.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "nodes.apps.leiteiroapp.com"
+          }
+        ]
+      }
+    },
+    "AWSEC2SubnetRouteTableAssociationuseast1aappsleiteiroappcom": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": {
+          "Ref": "AWSEC2Subnetuseast1aappsleiteiroappcom"
+        },
+        "RouteTableId": {
+          "Ref": "AWSEC2RouteTableappsleiteiroappcom"
+        }
+      }
+    },
+    "AWSEC2Subnetuseast1aappsleiteiroappcom": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCappsleiteiroappcom"
+        },
+        "CidrBlock": "172.20.32.0/19",
+        "AvailabilityZone": "us-east-1a",
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "apps.leiteiroapp.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "us-east-1a.apps.leiteiroapp.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/apps.leiteiroapp.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSEC2VPCDHCPOptionsAssociationappsleiteiroappcom": {
+      "Type": "AWS::EC2::VPCDHCPOptionsAssociation",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCappsleiteiroappcom"
+        },
+        "DhcpOptionsId": {
+          "Ref": "AWSEC2DHCPOptionsappsleiteiroappcom"
+        }
+      }
+    },
+    "AWSEC2VPCGatewayAttachmentappsleiteiroappcom": {
+      "Type": "AWS::EC2::VPCGatewayAttachment",
+      "Properties": {
+        "VpcId": {
+          "Ref": "AWSEC2VPCappsleiteiroappcom"
+        },
+        "InternetGatewayId": {
+          "Ref": "AWSEC2InternetGatewayappsleiteiroappcom"
+        }
+      }
+    },
+    "AWSEC2VPCappsleiteiroappcom": {
+      "Type": "AWS::EC2::VPC",
+      "Properties": {
+        "CidrBlock": "172.20.0.0/16",
+        "EnableDnsHostnames": true,
+        "EnableDnsSupport": true,
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "apps.leiteiroapp.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "apps.leiteiroapp.com"
+          },
+          {
+            "Key": "kubernetes.io/cluster/apps.leiteiroapp.com",
+            "Value": "owned"
+          }
+        ]
+      }
+    },
+    "AWSEC2Volumeaetcdeventsappsleiteiroappcom": {
+      "Type": "AWS::EC2::Volume",
+      "Properties": {
+        "AvailabilityZone": "us-east-1a",
+        "Size": 20,
+        "VolumeType": "gp2",
+        "Encrypted": false,
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "apps.leiteiroapp.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "a.etcd-events.apps.leiteiroapp.com"
+          },
+          {
+            "Key": "environment",
+            "Value": "lab"
+          },
+          {
+            "Key": "k8s.io/etcd/events",
+            "Value": "a/a"
+          },
+          {
+            "Key": "k8s.io/role/master",
+            "Value": "1"
+          },
+          {
+            "Key": "owner",
+            "Value": "inovacao"
+          },
+          {
+            "Key": "scheduler:ec2-startstop",
+            "Value": "1000;2200;utc;weekdays"
+          },
+          {
+            "Key": "solution",
+            "Value": "tools"
+          }
+        ]
+      }
+    },
+    "AWSEC2Volumeaetcdmainappsleiteiroappcom": {
+      "Type": "AWS::EC2::Volume",
+      "Properties": {
+        "AvailabilityZone": "us-east-1a",
+        "Size": 20,
+        "VolumeType": "gp2",
+        "Encrypted": false,
+        "Tags": [
+          {
+            "Key": "KubernetesCluster",
+            "Value": "apps.leiteiroapp.com"
+          },
+          {
+            "Key": "Name",
+            "Value": "a.etcd-main.apps.leiteiroapp.com"
+          },
+          {
+            "Key": "environment",
+            "Value": "lab"
+          },
+          {
+            "Key": "k8s.io/etcd/main",
+            "Value": "a/a"
+          },
+          {
+            "Key": "k8s.io/role/master",
+            "Value": "1"
+          },
+          {
+            "Key": "owner",
+            "Value": "inovacao"
+          },
+          {
+            "Key": "scheduler:ec2-startstop",
+            "Value": "1000;2200;utc;weekdays"
+          },
+          {
+            "Key": "solution",
+            "Value": "tools"
+          }
+        ]
+      }
+    },
+    "AWSIAMInstanceProfilemastersappsleiteiroappcom": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "Roles": [
+          {
+            "Ref": "AWSIAMRolemastersappsleiteiroappcom"
+          }
+        ]
+      }
+    },
+    "AWSIAMInstanceProfilenodesappsleiteiroappcom": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "Roles": [
+          {
+            "Ref": "AWSIAMRolenodesappsleiteiroappcom"
+          }
+        ]
+      }
+    },
+    "AWSIAMPolicymastersappsleiteiroappcom": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "masters.apps.leiteiroapp.com",
+        "Roles": [
+          {
+            "Ref": "AWSIAMRolemastersappsleiteiroappcom"
+          }
+        ],
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "ecr:GetAuthorizationToken",
+                "ecr:BatchCheckLayerAvailability",
+                "ecr:GetDownloadUrlForLayer",
+                "ecr:GetRepositoryPolicy",
+                "ecr:DescribeRepositories",
+                "ecr:ListImages",
+                "ecr:BatchGetImage"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "ec2:*"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "elasticloadbalancing:*"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "autoscaling:DescribeAutoScalingGroups",
+                "autoscaling:DescribeAutoScalingInstances",
+                "autoscaling:SetDesiredCapacity",
+                "autoscaling:TerminateInstanceInAutoScalingGroup"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "route53:ChangeResourceRecordSets",
+                "route53:ListResourceRecordSets",
+                "route53:GetHostedZone"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:route53:::hostedzone/Z2DMNRJH630YC6"
+              ]
+            },
+            {
+              "Action": [
+                "route53:GetChange"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:route53:::change/*"
+              ]
+            },
+            {
+              "Action": [
+                "route53:ListHostedZones"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "s3:*"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:s3:::com-leiteiroapp-kops-apps-state-store/apps.leiteiroapp.com",
+                "arn:aws:s3:::com-leiteiroapp-kops-apps-state-store/apps.leiteiroapp.com/*"
+              ]
+            },
+            {
+              "Action": [
+                "s3:GetBucketLocation",
+                "s3:ListBucket"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:s3:::com-leiteiroapp-kops-apps-state-store"
+              ]
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      }
+    },
+    "AWSIAMPolicynodesappsleiteiroappcom": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "nodes.apps.leiteiroapp.com",
+        "Roles": [
+          {
+            "Ref": "AWSIAMRolenodesappsleiteiroappcom"
+          }
+        ],
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "ec2:Describe*"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "ecr:GetAuthorizationToken",
+                "ecr:BatchCheckLayerAvailability",
+                "ecr:GetDownloadUrlForLayer",
+                "ecr:GetRepositoryPolicy",
+                "ecr:DescribeRepositories",
+                "ecr:ListImages",
+                "ecr:BatchGetImage"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "route53:ChangeResourceRecordSets",
+                "route53:ListResourceRecordSets",
+                "route53:GetHostedZone"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:route53:::hostedzone/Z2DMNRJH630YC6"
+              ]
+            },
+            {
+              "Action": [
+                "route53:GetChange"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:route53:::change/*"
+              ]
+            },
+            {
+              "Action": [
+                "route53:ListHostedZones"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Action": [
+                "s3:*"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:s3:::com-leiteiroapp-kops-apps-state-store/apps.leiteiroapp.com",
+                "arn:aws:s3:::com-leiteiroapp-kops-apps-state-store/apps.leiteiroapp.com/*"
+              ]
+            },
+            {
+              "Action": [
+                "s3:GetBucketLocation",
+                "s3:ListBucket"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "arn:aws:s3:::com-leiteiroapp-kops-apps-state-store"
+              ]
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      }
+    },
+    "AWSIAMRolemastersappsleiteiroappcom": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "masters.apps.leiteiroapp.com",
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ec2.amazonaws.com"
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      }
+    },
+    "AWSIAMRolenodesappsleiteiroappcom": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "nodes.apps.leiteiroapp.com",
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ec2.amazonaws.com"
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      }
+    }
+  }
+}

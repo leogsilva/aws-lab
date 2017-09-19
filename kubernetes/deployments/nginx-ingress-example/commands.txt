@@ -1,0 +1,12 @@
+# See https://ryaneschinger.com/blog/automatic-dns-kubernetes-ingresses-externaldns/
+
+# Install HELM charts for external-dns
+helm install stable/external-dns
+
+#install helm charts for nginx ingress
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress/master/examples/aws/nginx/nginx-ingress-controller.yaml
+
+# Install kube lego
+helm install --name kube-lego-staging \
+  --set config.LEGO_EMAIL=build-agent@somedomain.com.br \
+    stable/kube-lego

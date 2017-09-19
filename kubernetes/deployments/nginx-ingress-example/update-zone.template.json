@@ -1,0 +1,32 @@
+{
+	  "Comment": "Create a subdomain NS record in the parent domain",
+	    "Changes": [{
+	        "Action": "UPSERT",
+		    "ResourceRecordSet": {
+		          "Name": "",
+			        "Type": "NS",
+				      "TTL": 300,
+				            "ResourceRecords": []
+					        }
+						  }]
+					  }
+					  EOL
+
+					  # generate the changeset for the parent zone
+					  cat update-zone.template.json 						   | jq ".Changes[].ResourceRecordSet.Name=\"apps.somehost.com.br.\"" 						    | jq ".Changes[].ResourceRecordSet.ResourceRecords=[
+  {
+    "Value": "ns-2042.awsdns-63.co.uk"
+  },
+  {
+    "Value": "ns-472.awsdns-59.com"
+  },
+  {
+    "Value": "ns-1415.awsdns-48.org"
+  },
+  {
+    "Value": "ns-740.awsdns-28.net"
+  }
+]" > update-zone.json
+
+					  # create a NS record for the subdomain in the parent zone
+					  aws route53 change-resource-record-sets 						    --hosted-zone-id  						      --change-batch file://update-zone.json
