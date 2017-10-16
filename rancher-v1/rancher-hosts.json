@@ -25,11 +25,11 @@
     },
     "CPUAlarmHighEvalPeriods": {
       "Type": "String",
-      "Default": "1"
+      "Default": "5"
     },
     "CPUAlarmHighThreshold": {
       "Type": "String",
-      "Default": "80"
+      "Default": "90"
     },
     "CPUAlarmLowThreshold": {
       "Type": "String",
@@ -95,9 +95,73 @@
         }
       }
     },
+    "InstanceRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [ "ec2.amazonaws.com" ]
+              },
+              "Action": [ "sts:AssumeRole" ]
+            }
+          ]
+        },
+        "Path": "/",
+        "Policies": [
+          {
+            "PolicyName": "ApplicationPolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "elasticbeanstalk:*",
+                    "elastiCache:*",
+                    "route53:*",
+                    "ec2:*",
+                    "elasticloadbalancing:*",
+                    "autoscaling:*",
+                    "cloudwatch:*",
+                    "dynamodb:*",
+                    "s3:*",
+                    "sns:*",
+                    "sqs:*",
+                    "cloudformation:*",
+                    "rds:*",
+                    "iam:AddRoleToInstanceProfile",
+                    "iam:CreateInstanceProfile",
+                    "iam:CreateRole",
+                    "iam:PassRole",
+                    "iam:ListInstanceProfiles"
+                  ],
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "HostsInstanceProfile": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "Path": "/",
+        "Roles": [{
+            "Ref": "InstanceRole"
+        }]
+      }
+    },
     "ComponentLaunchConfiguration": {
       "Type": "AWS::AutoScaling::LaunchConfiguration",
       "Properties": {
+        "IamInstanceProfile": {
+          "Ref": "HostsInstanceProfile"
+        },
         "KeyName": {
           "Ref": "KeyName"
         },
@@ -151,7 +215,7 @@
     "CPUAlarmHigh": {
       "Type": "AWS::CloudWatch::Alarm",
       "Properties": {
-        "AlarmDescription": "Scale-up if CPU > 80% for 1 minutes",
+        "AlarmDescription": "Scale-up if CPU > 90% for 5 minutes",
         "Threshold": {
           "Ref": "CPUAlarmHighThreshold"
         },
