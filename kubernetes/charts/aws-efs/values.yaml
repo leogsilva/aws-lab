@@ -1,0 +1,24 @@
+
+Provisioner:
+  EfsId: fs-b825a3f1
+  Region: us-east-1
+  Name: tools.aws.com.br/aws-efs
+  ConfigName: efs-provisioner
+
+
+Persistence:
+  Enabled: true
+  ## A manually managed Persistent Volume and Claim
+  ## Requires Persistence.Enabled: true
+  ## If defined, PVC must be created manually before volume will be bound
+  # ExistingClaim:
+
+  ## If defined, volume.beta.kubernetes.io/storage-class: <StorageClass>
+  ## Default: volume.alpha.kubernetes.io/storage-class: default
+  ##
+  # StorageClass:
+  AccessMode: ReadWriteOnce
+  StorageClass: slow
+  Size: 10Gi
+  MountPath: /persistentvolumes
+  Server: fs-b825a3f1.efs.us-east-1.amazonaws.com

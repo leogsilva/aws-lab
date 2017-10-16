@@ -1,0 +1,15 @@
+name: aws-efs
+version: 0.0.1
+description: Simple chart to install AWS EFS as Persistent volume
+keywords:
+  - AWS
+  - EFS
+  - nfs
+  - persistent volume
+home: http://aws.amazon.com
+sources:
+  - https://github.com/leogsilva/aws-lab/
+maintainers:
+  - name: Leonardo Silva
+    email: leogsilva@gmail.com
+engine: apache2

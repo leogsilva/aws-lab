@@ -1,0 +1,8 @@
+apiVersion: storage.k8s.io/v1beta1
+kind: StorageClass
+metadata:
+  name: {{ .Values.Persistence.StorageClass }}
+provisioner: {{ .Values.Provisioner.Name }}
+parameters:
+  gidMin: "40000"
+  gidMax: "50000"

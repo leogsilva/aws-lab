@@ -1,0 +1,14 @@
+apiVersion: v1
+data:
+  file.system.id: {{ .Values.Provisioner.EfsId }}
+  aws.region: {{ .Values.Provisioner.Region }}
+  provisioner.name: {{ .Values.Provisioner.Name }}
+
+kind: ConfigMap
+metadata:
+  name: {{ .Values.Provisioner.ConfigName }}
+  labels:
+    app: {{ template "fullname" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
