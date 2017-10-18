@@ -1,15 +1,19 @@
 
+RBAC:
+  Enabled: true
+  RoleName: cluster-admin
+  ServiceAccount: default
+
 Provisioner:
-  EfsId: fs-b825a3f1
+  EfsId: fs-71155e38
   Region: us-east-1
-  Name: tools.aws.com.br/aws-efs
-  ConfigName: efs-provisioner
+  Name: efs-provisioner
+  ClassName: tools.aws.com.br/aws-efs
 
 
 Persistence:
   Enabled: true
-  AccessMode: ReadWriteOnce
+  AccessMode: ReadWriteMany
   StorageClass: slow
   Size: 10Gi
   MountPath: /persistentvolumes
-  Server: fs-b825a3f1.efs.us-east-1.amazonaws.com

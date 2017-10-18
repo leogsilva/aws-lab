@@ -10,7 +10,7 @@ metadata:
     heritage: "{{ .Release.Service }}"
   annotations:
   {{- if .Values.Persistence.StorageClass }}
-    volume.beta.kubernetes.io/storage-class: {{ .Values.Persistence.StorageClass }}
+    volume.beta.kubernetes.io/storage-class: "{{ .Values.Persistence.StorageClass }}"
   {{- else }}
     volume.alpha.kubernetes.io/storage-class: default
   {{- end }}

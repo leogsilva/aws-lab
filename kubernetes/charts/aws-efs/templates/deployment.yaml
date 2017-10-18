@@ -1,7 +1,7 @@
 kind: Deployment
 apiVersion: extensions/v1beta1
 metadata:
-  name: efs-provisioner
+  name: {{ .Values.Provisioner.Name }}
 spec:
   replicas: 1
   strategy:
@@ -9,7 +9,7 @@ spec:
   template:
     metadata:
       labels:
-        app: efs-provisioner
+        app: {{ .Values.Provisioner.Name }}
     spec:
       containers:
         - name: efs-provisioner
@@ -18,17 +18,17 @@ spec:
             - name: FILE_SYSTEM_ID
               valueFrom:
                 configMapKeyRef:
-                  name: {{ .Values.Provisioner.ConfigName }}
+                  name: {{ .Values.Provisioner.Name }}
                   key: file.system.id
             - name: AWS_REGION
               valueFrom:
                 configMapKeyRef:
-                  name: {{ .Values.Provisioner.ConfigName }}
+                  name: {{ .Values.Provisioner.Name }}
                   key: aws.region
             - name: PROVISIONER_NAME
               valueFrom:
                 configMapKeyRef:
-                  name: {{ .Values.Provisioner.ConfigName }}
+                  name: {{ .Values.Provisioner.Name }}
                   key: provisioner.name
           volumeMounts:
             - name: pv-volume
@@ -36,5 +36,5 @@ spec:
       volumes:
         - name: pv-volume
           nfs:
-            server: {{ .Values.Persistence.Server }}
+            server: {{ template "efsdns" . }}
             path: /
