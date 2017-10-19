@@ -1,0 +1,529 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Parameters": {
+    "MinSize": {
+      "Type": "String",
+      "Description": "The minimum number of instances",
+      "Default": 1
+    },
+    "MaxSize": {
+      "Type": "String",
+      "Description": "The maximum number of instances",
+      "Default": 2
+    },
+    "InstanceType": {
+      "Type": "String",
+      "Description": "The size of the instances",
+      "Default": "t2.small"
+    },
+    "ImageId": {
+      "Type": "String",
+      "Default": "ami-8c1be5f6"
+    },
+    "KeyName": {
+      "Type": "AWS::EC2::KeyPair::KeyName"
+    },
+    "CPUAlarmHighEvalPeriods": {
+      "Type": "String",
+      "Default": "5"
+    },
+    "CPUAlarmHighThreshold": {
+      "Type": "String",
+      "Default": "90"
+    },
+    "CPUAlarmLowThreshold": {
+      "Type": "String",
+      "Default": "60"
+    },
+    "CPUAlarmLowEvalPeriods": {
+      "Type": "String",
+      "Default": "5"
+    },
+    "AlarmPeriod": {
+      "Type": "String",
+      "Default": "60"
+    },
+    "RancherServerURL": {
+      "Type": "String"
+    },
+    "VpcId": {
+      "Type": "AWS::EC2::VPC::Id",
+      "Default": "vpc-"
+    },
+    "PublicSubnets": {
+      "Type": "List<AWS::EC2::Subnet::Id>",
+      "Default": "subnet-"
+    },
+    "CattleLabel": {
+      "Type": "String",
+      "Default": "etcd=true"
+    },
+    "VolumeName" : {
+      "Description" : "The name to be used for the EFS volume",
+      "Type": "String",
+      "MinLength": "1",
+      "Default": "etcd-volume"
+    },
+    "MountPoint" : {
+      "Description" : "The Linux mount point for the EFS volume",
+      "Type": "String",
+      "MinLength": "1",
+      "Default": "/var/etcd/backups"
+    }
+  },
+  "Resources": {
+    "ComponentSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "SecurityGroupIngress": [
+          {
+            "FromPort": 0,
+            "ToPort": 0,
+            "IpProtocol": "-1",
+            "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "VpcId": {
+          "Ref": "VpcId"
+        },
+        "GroupDescription": "A component security group allowing access to the outside world"
+      }
+    },
+      "FileSystem": {
+       "Type": "AWS::EFS::FileSystem",
+       "Properties": {
+         "PerformanceMode": "generalPurpose",
+         "FileSystemTags": [
+           {
+             "Key": "Name",
+             "Value": { "Ref" : "VolumeName" }
+           }
+         ]
+       }
+     },
+     "MountTarget0": {
+      "Type": "AWS::EFS::MountTarget",
+      "Properties": {
+        "FileSystemId": { "Ref": "FileSystem" },
+        "SubnetId": {  "Fn::Select" : [ "0", { "Ref" : "PublicSubnets" } ] } ,
+        "SecurityGroups": [ { "Ref": "MountTargetSecurityGroup" } ]
+      }
+    },
+    "MountTarget1": {
+     "Type": "AWS::EFS::MountTarget",
+     "Properties": {
+       "FileSystemId": { "Ref": "FileSystem" },
+       "SubnetId": {  "Fn::Select" : [ "1", { "Ref" : "PublicSubnets" } ] } ,
+       "SecurityGroups": [ { "Ref": "MountTargetSecurityGroup" } ]
+     }
+   },
+    "MountTargetSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Security group for mount target",
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "2049",
+            "ToPort": "2049",
+            "SourceSecurityGroupId": {
+              "Fn::GetAtt": [
+                 "ComponentSecurityGroup",
+                 "GroupId"
+               ]
+            }
+          }
+        ],
+        "VpcId": {
+          "Ref": "VpcId"
+        },
+      },
+      "DependsOn": "ComponentSecurityGroup"
+    },
+    "ComponentAutoScalingGroup": {
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "UpdatePolicy": {
+        "AutoScalingRollingUpdate": {
+          "MinInstancesInService": { "Ref" : "MinSize" },
+          "MaxBatchSize": 1,
+          "PauseTime": "PT0S"
+        }
+      },
+      "Properties": {
+        "VPCZoneIdentifier" : { "Ref" : "PublicSubnets" },
+        "Tags": [
+          {
+            "Value": "rancher",
+            "PropagateAtLaunch": true,
+            "Key": "Project"
+          },
+          {
+            "Value": "rancher-node",
+            "PropagateAtLaunch": true,
+            "Key": "Name"
+          },
+          {
+            "Value": "rancher-node",
+            "PropagateAtLaunch": true,
+            "Key": "Component"
+          }
+        ],
+        "MinSize": {
+          "Ref": "MinSize"
+        },
+        "MaxSize": {
+          "Ref": "MaxSize"
+        },
+        "LaunchConfigurationName": {
+          "Ref": "ComponentLaunchConfiguration"
+        }
+      }
+    },
+    "InstanceRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [ "ec2.amazonaws.com" ]
+              },
+              "Action": [ "sts:AssumeRole" ]
+            }
+          ]
+        },
+        "Path": "/",
+        "Policies": [
+          {
+            "PolicyName": "ApplicationPolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "elasticbeanstalk:*",
+                    "elastiCache:*",
+                    "route53:*",
+                    "ec2:*",
+                    "elasticloadbalancing:*",
+                    "autoscaling:*",
+                    "cloudwatch:*",
+                    "dynamodb:*",
+                    "s3:*",
+                    "sns:*",
+                    "sqs:*",
+                    "cloudformation:*",
+                    "rds:*",
+                    "iam:AddRoleToInstanceProfile",
+                    "iam:CreateInstanceProfile",
+                    "iam:CreateRole",
+                    "iam:PassRole",
+                    "iam:ListInstanceProfiles",
+                    "elasticfilesystem:*"
+                  ],
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "HostsInstanceProfile": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "Path": "/",
+        "Roles": [{
+            "Ref": "InstanceRole"
+        }]
+      }
+    },
+    "ComponentLaunchConfiguration": {
+      "Type": "AWS::AutoScaling::LaunchConfiguration",
+      "Metadata": {
+        "AWS::CloudFormation::Init" : {
+          "configSets" : {
+            "MountConfig" : [ "setup" ]
+          },
+          "setup" : {
+            "packages" : {
+              "yum" : {
+                "nfs-utils" : []
+              }
+            },
+            "files" : {
+              "/home/ec2-user/post_nfsstat" : {
+                "content" : { "Fn::Join" : [ "", [
+                      "#!/bin/bash\n",
+                      "\n",
+                      "INPUT=\"$(cat)\"\n",
+                      "CW_JSON_OPEN='{ \"Namespace\": \"EFS\", \"MetricData\": [ '\n",
+                      "CW_JSON_CLOSE=' ] }'\n",
+                      "CW_JSON_METRIC=''\n",
+                      "METRIC_COUNTER=0\n",
+                      "\n",
+                      "for COL in 1 2 3 4 5 6; do\n",
+                      "\n",
+                      " COUNTER=0\n",
+                      " METRIC_FIELD=$COL\n",
+                      " DATA_FIELD=$(($COL+($COL-1)))\n",
+                      "\n",
+                      " while read line; do\n",
+                      "   if [[ COUNTER -gt 0 ]]; then\n",
+                      "\n",
+                      "     LINE=`echo $line | tr -s ' ' `\n",
+                      "     AWS_COMMAND=\"aws cloudwatch put-metric-data --region ", { "Ref": "AWS::Region" }, "\"\n",
+                      "     MOD=$(( $COUNTER % 2))\n",
+                      "\n",
+                      "     if [ $MOD -eq 1 ]; then\n",
+                      "       METRIC_NAME=`echo $LINE | cut -d ' ' -f $METRIC_FIELD`\n",
+                      "     else\n",
+                      "       METRIC_VALUE=`echo $LINE | cut -d ' ' -f $DATA_FIELD`\n",
+                      "     fi\n",
+                      "\n",
+                      "     if [[ -n \"$METRIC_NAME\" && -n \"$METRIC_VALUE\" ]]; then\n",
+                      "       INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)\n",
+                      "       CW_JSON_METRIC=\"$CW_JSON_METRIC { \\\"MetricName\\\": \\\"$METRIC_NAME\\\", \\\"Dimensions\\\": [{\\\"Name\\\": \\\"InstanceId\\\", \\\"Value\\\": \\\"$INSTANCE_ID\\\"} ], \\\"Value\\\": $METRIC_VALUE },\"\n",
+                      "       unset METRIC_NAME\n",
+                      "       unset METRIC_VALUE\n",
+                      "\n",
+                      "       METRIC_COUNTER=$((METRIC_COUNTER+1))\n",
+                      "       if [ $METRIC_COUNTER -eq 20 ]; then\n",
+                      "         # 20 is max metric collection size, so we have to submit here\n",
+                      "         aws cloudwatch put-metric-data --region ", { "Ref": "AWS::Region" }, " --cli-input-json \"`echo $CW_JSON_OPEN ${CW_JSON_METRIC%?} $CW_JSON_CLOSE`\"\n",
+                      "\n",
+                      "         # reset\n",
+                      "         METRIC_COUNTER=0\n",
+                      "         CW_JSON_METRIC=''\n",
+                      "       fi\n",
+                      "     fi  \n",
+                      "\n",
+                      "\n",
+                      "\n",
+                      "     COUNTER=$((COUNTER+1))\n",
+                      "   fi\n",
+                      "\n",
+                      "   if [[ \"$line\" == \"Client nfs v4:\" ]]; then\n",
+                      "     # the next line is the good stuff \n",
+                      "     COUNTER=$((COUNTER+1))\n",
+                      "   fi\n",
+                      " done <<< \"$INPUT\"\n",
+                      "done\n",
+                      "\n",
+                      "# submit whatever is left\n",
+                      "aws cloudwatch put-metric-data --region ", { "Ref": "AWS::Region" }, " --cli-input-json \"`echo $CW_JSON_OPEN ${CW_JSON_METRIC%?} $CW_JSON_CLOSE`\""
+                    ] ] },
+                "mode": "000755",
+                "owner": "ec2-user",
+                "group": "ec2-user"
+              },
+              "/home/ec2-user/crontab" : {
+                "content" : { "Fn::Join" : [ "", [
+                  "* * * * * /usr/sbin/nfsstat | /home/ec2-user/post_nfsstat\n"
+                ] ] },
+                "owner": "ec2-user",
+                "group": "ec2-user"
+              }
+            },
+            "commands" : {
+              "01_createdir" : {
+                "command" : {"Fn::Join" : [ "", [ "mkdir -p /", { "Ref" : "MountPoint" }]]}
+              }
+            }
+          },
+          "mount" : {
+            "commands" : {
+              "01_mount" : {
+                "command" : { "Fn::Sub": "sudo mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 ${FileSystem}.efs.${AWS::Region}.amazonaws.com:/ /${MountPoint}"}
+              },
+              "02_permissions" : {
+                "command" : {"Fn::Join" : [ "", [ "chown ec2-user:ec2-user /", { "Ref" : "MountPoint" }]]}
+              }
+            }
+          }
+        }
+      },
+      "Properties": {
+        "IamInstanceProfile": {
+          "Ref": "HostsInstanceProfile"
+        },
+        "KeyName": {
+          "Ref": "KeyName"
+        },
+        "SecurityGroups": [
+          {
+            "Ref": "ComponentSecurityGroup"
+          }
+        ],
+        "InstanceType": {
+          "Ref": "InstanceType"
+        },
+        "ImageId": {
+          "Ref": "ImageId"
+        },
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "",
+              [
+                "#!/bin/bash -xe\n",
+                "yum install -y aws-cfn-bootstrap\n",
+                "/opt/aws/bin/cfn-init -v ",
+                "         --stack ",
+                  { "Ref" : "AWS::StackName" },
+                "         --resource ComponentLaunchConfiguration ",
+                "         --configsets MountConfig ",
+                "         --region ",
+                  { "Ref" : "AWS::Region" }, "\n",
+                "crontab /home/ec2-user/crontab\n",
+                "curl https://releases.rancher.com/install-docker/1.12.sh | sh\n",
+                "sudo service docker start\n",
+                "sudo chkconfig docker on\n",
+                { "Fn::Sub": "sudo mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 ${FileSystem}.efs.${AWS::Region}.amazonaws.com:/ /${MountPoint}\n"},
+                {"Fn::Join" : [ "", [ "chown ec2-user:ec2-user /", { "Ref" : "MountPoint" }]]},
+                "\n",
+                "sudo docker run ",
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "-e CATTLE_HOST_LABELS='",
+                      {
+                        "Ref": "CattleLabel"
+                      },
+                      "'"
+                    ]
+                  ]
+                },
+                " --rm --privileged -v /var/run/docker.sock:/var/run/docker.sock -v /var/lib/rancher:/var/lib/rancher rancher/agent:v1.2.6 ",
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "",
+                      {
+                        "Ref": "RancherServerURL"
+                      },
+                      ""
+                    ]
+                  ]
+                },
+                "\n",
+                "/opt/aws/bin/cfn-signal -e $? ",
+                "         --stack ",
+                  { "Ref" : "AWS::StackName" },
+                "         --resource ComponentAutoScalingGroup ",
+                "         --region ",
+                  { "Ref" : "AWS::Region" },
+                "\n",
+              ]
+            ]
+          }
+        }
+      }
+    },
+    "ComponentScaleUpPolicy": {
+      "Type": "AWS::AutoScaling::ScalingPolicy",
+      "Properties": {
+        "AutoScalingGroupName": {
+          "Ref": "ComponentAutoScalingGroup"
+        },
+        "AdjustmentType": "ChangeInCapacity",
+        "Cooldown": 240,
+        "ScalingAdjustment": 1
+      }
+    },
+    "ComponentScaleDownPolicy": {
+      "Type": "AWS::AutoScaling::ScalingPolicy",
+      "Properties": {
+        "AutoScalingGroupName": {
+          "Ref": "ComponentAutoScalingGroup"
+        },
+        "AdjustmentType": "ChangeInCapacity",
+        "Cooldown": 60,
+        "ScalingAdjustment": -1
+      }
+    },
+    "CPUAlarmHigh": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "AlarmDescription": "Scale-up if CPU > 90% for 5 minutes",
+        "Threshold": {
+          "Ref": "CPUAlarmHighThreshold"
+        },
+        "AlarmActions": [
+          {
+            "Ref": "ComponentScaleUpPolicy"
+          }
+        ],
+        "ComparisonOperator": "GreaterThanThreshold",
+        "EvaluationPeriods": {
+          "Ref": "CPUAlarmHighEvalPeriods"
+        },
+        "MetricName": "CPUUtilization",
+        "Namespace": "AWS/EC2",
+        "Statistic": "Average",
+        "Period": {
+          "Ref": "AlarmPeriod"
+        },
+        "Dimensions": [
+          {
+            "Name": "AutoScalingGroupName",
+            "Value": {
+              "Ref": "ComponentAutoScalingGroup"
+            }
+          }
+        ]
+      }
+    },
+    "CPUAlarmLow": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "AlarmDescription": "Scale-down if CPU < 60% for 5 minutes",
+        "Threshold": {
+          "Ref": "CPUAlarmLowThreshold"
+        },
+        "AlarmActions": [
+          {
+            "Ref": "ComponentScaleDownPolicy"
+          }
+        ],
+        "ComparisonOperator": "LessThanThreshold",
+        "EvaluationPeriods": {
+          "Ref": "CPUAlarmLowEvalPeriods"
+        },
+        "MetricName": "CPUUtilization",
+        "Namespace": "AWS/EC2",
+        "Statistic": "Average",
+        "Period": {
+          "Ref": "AlarmPeriod"
+        },
+        "Dimensions": [
+          {
+            "Name": "AutoScalingGroupName",
+            "Value": {
+              "Ref": "ComponentAutoScalingGroup"
+            }
+          }
+        ]
+      }
+    },
+  },
+  "Outputs" : {
+    "MountTargetID0" : {
+      "Description" : "Mount target ID",
+      "Value" :  { "Ref" : "MountTarget0" }
+    },
+    "MountTargetID1" : {
+      "Description" : "Mount target ID",
+      "Value" :  { "Ref" : "MountTarget1" }
+    },
+    "FileSystemID" : {
+      "Description" : "File system ID",
+      "Value" :  { "Ref" : "FileSystem" }
+    }
+  }
+}

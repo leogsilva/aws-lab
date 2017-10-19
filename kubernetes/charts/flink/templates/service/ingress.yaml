@@ -1,0 +1,12 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ template "fullname" . }}-ingress
+spec:
+  rules:
+  - host: flinkadmin.tools.ihm.com.br
+    http:
+      paths:
+      - backend:
+          serviceName: {{ template "fullname" . }}-jobmanager
+          servicePort: 8081

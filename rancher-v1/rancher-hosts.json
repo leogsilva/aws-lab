@@ -53,6 +53,10 @@
     "PublicSubnets": {
       "Type": "List<AWS::EC2::Subnet::Id>",
       "Default": "subnet-"
+    },
+    "CattleLabel": {
+      "Type": "String",
+      "Default": "mylabel"
     }
   },
   "Resources": {
@@ -137,7 +141,8 @@
                     "iam:CreateInstanceProfile",
                     "iam:CreateRole",
                     "iam:PassRole",
-                    "iam:ListInstanceProfiles"
+                    "iam:ListInstanceProfiles",
+                    "elasticfilesystem:*"
                   ],
                   "Resource": "*"
                 }
@@ -181,9 +186,36 @@
             "Fn::Join": [
               "",
               [
-                "#!/bin/bash\n",
+                "#!/bin/bash -xe\n",
                 "curl https://releases.rancher.com/install-docker/1.12.sh | sh\n",
-                "sudo docker run --rm --privileged -v /var/run/docker.sock:/var/run/docker.sock -v /var/lib/rancher:/var/lib/rancher rancher/agent:v1.2.6 http://rancher-componente-16mwbj7wivliz-270606281.us-east-1.elb.amazonaws.com/v1/scripts/352F1BC500B417E75713:1483142400000:XAJDs2l9h6IuoK3mCOhShmO9Q\n",
+                "sudo service docker start\n",
+                "sudo docker run ",
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "-e CATTLE_HOST_LABELS='",
+                      {
+                        "Ref": "CattleLabel"
+                      },
+                      "'"
+                    ]
+                  ]
+                },
+                " --rm --privileged -v /var/run/docker.sock:/var/run/docker.sock -v /var/lib/rancher:/var/lib/rancher rancher/agent:v1.2.6 ",
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "",
+                      {
+                        "Ref": "RancherServerURL"
+                      },
+                      ""
+                    ]
+                  ]
+                },
+                "\n",
               ]
             ]
           }
