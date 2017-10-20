@@ -5,7 +5,7 @@ RBAC:
   ServiceAccount: default
 
 Provisioner:
-  EfsId: fs-71155e38
+  EfsId: fs-5cb2f815
   Region: us-east-1
   Name: efs-provisioner
   ClassName: tools.aws.com.br/aws-efs
@@ -14,6 +14,6 @@ Provisioner:
 Persistence:
   Enabled: true
   AccessMode: ReadWriteMany
-  StorageClass: slow
-  Size: 10Gi
+  StorageClass: efs-slow
+  Size: 50Gi
   MountPath: /persistentvolumes

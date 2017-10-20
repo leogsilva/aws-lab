@@ -7,7 +7,7 @@ metadata:
 data:
   flink-conf.yaml: |
     blob.server.port: 6124
-    jobmanager.rpc.address: {{ template "fullname" . }}-jobmanager
+    jobmanager.rpc.address: {{ template "fullname" . }}-jobmanager.{{ .Release.Namespace }}
     jobmanager.rpc.port: 6123
     jobmanager.heap.mb: {{ .Values.flink.jobmanager_heap_mb }}
     taskmanager.heap.mb: {{ .Values.flink.taskmanager_heap_mb }}
@@ -24,3 +24,7 @@ data:
 {{.Files.Get "config/log4j.properties" | indent 4}}
   logback.xml: |
 {{.Files.Get "config/logback.xml" | indent 4}}
+  log4j-console.properties: |
+{{.Files.Get "config/log4j-console.properties" | indent 4}}
+  log4j-cli.properties: |
+{{.Files.Get "config/log4j-cli.properties" | indent 4}}
