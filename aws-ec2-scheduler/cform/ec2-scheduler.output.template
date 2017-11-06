@@ -301,7 +301,7 @@ Resources:
     Type: AWS::IAM::Role
   ec2SchedulerOptIn:
     Properties:
-      CodeUri: s3://br-com-ihm-cloudformation/ab591e4cf5e5888d09d0edd82db30f0d
+      CodeUri: s3://br-com-ihm-prod-cloudformation/ab591e4cf5e5888d09d0edd82db30f0d
       Description: EC2 Scheduler Lambda function for automatically starting and stopping
         EC2 instances.
       Handler: ec2-scheduler.lambda_handler

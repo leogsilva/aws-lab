@@ -1,6 +1,6 @@
 images:
-  flink: docker.io/flink
-  additional_classpath_files: docker.io/plucas/additional-flink-jars:empty
+  flink: flink:1.3.2-hadoop27-scala_2.11
+  additional_classpath_files: docker.io/plucas/additional-flink-jars:latest
 
 resources:
   jobmanager:
@@ -19,11 +19,17 @@ resources:
 flink:
   jobmanager_heap_mb: 1024
   taskmanager_heap_mb: 1024
-  num_taskmanagers: 1
+  num_taskmanagers: 2
   num_slots_per_taskmanager: 1
+  persistent_volume_claim:
+    enabled: false
+    claimName: omo-flink-fs-aws-efs
+    mountdir: /persistentvolumes
+
   highavailability:
     enabled: false
-    zookeeper_quorum: zookeeper-1,zookeeper-2,zookeeper-3
-    state_s3_bucket: some-bucket
-    aws_access_key_id: xxx
-    aws_secret_access_key: yyy
+#    zookeeper_quorum: zookeeper-zookeeper-0.omo-dev.svc.cluster,zookeeper-zookeeper-1.omo-dev.svc.cluster,zookeeper-zookeeper-2.omo-dev.svc.cluster
+    zookeeper_quorum: zookeeper-zookeeper.omo-dev.svc.cluster.local
+    state_s3_bucket: br-com-ihm-kubernetes-zk-qa
+    aws_access_key_id: AKIAISLAFJE2RXHZ4AIA
+    aws_secret_access_key: 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

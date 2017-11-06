@@ -55,6 +55,10 @@ spec:
           mountPath: /etc/hadoop/conf
         - name: additional-classpath-files
           mountPath: /opt/flink/lib/additional-classpath-files
+{{- if .Values.flink.persistent_volume_claim.enabled }}
+        - name: webupload
+          mountPath: {{ .Values.flink.persistent_volume_claim.mountdir }}
+{{- end }}
       volumes:
         - name: {{ template "fullname" . }}-flink-config
           configMap:
@@ -64,3 +68,8 @@ spec:
             name: {{ template "fullname" . }}-hadoop-config
         - name: additional-classpath-files
           emptyDir: {}
+{{- if .Values.flink.persistent_volume_claim.enabled }}
+        - name: webupload
+          persistentVolumeClaim:
+            claimName: {{ .Values.flink.persistent_volume_claim.claimName }}
+{{- end }}

@@ -17,3 +17,4 @@ Persistence:
   StorageClass: efs-slow
   Size: 50Gi
   MountPath: /persistentvolumes
+  ExistingClaim: false

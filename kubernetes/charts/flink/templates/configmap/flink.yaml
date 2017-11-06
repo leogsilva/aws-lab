@@ -6,8 +6,11 @@ metadata:
     app: {{ template "fullname" . }}
 data:
   flink-conf.yaml: |
+{{- if .Values.flink.persistent_volume_claim.enabled }}
+    jobmanager.web.upload.dir: {{ .Values.flink.persistent_volume_claim.mountdir }}
+{{- end }}
     blob.server.port: 6124
-    jobmanager.rpc.address: {{ template "fullname" . }}-jobmanager.{{ .Release.Namespace }}
+    jobmanager.rpc.address: {{ template "fullname" . }}-jobmanager.{{ .Release.Namespace }}.svc.cluster.local
     jobmanager.rpc.port: 6123
     jobmanager.heap.mb: {{ .Values.flink.jobmanager_heap_mb }}
     taskmanager.heap.mb: {{ .Values.flink.taskmanager_heap_mb }}

@@ -1,0 +1,136 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "Creates a PostgreSQL RDS Instance",
+
+  "Parameters" : {
+
+    "DbMasterUsername" : {
+      "Description" : "The master user name for the database instance.",
+      "Type" : "String"
+    },
+
+    "DbMasterUserPassword" : {
+      "Description" : "The master password for the database instance.",
+      "Type" : "String",
+	  "NoEcho" : "true"
+    },
+
+    "DBInstanceClass" : {
+      "Description" : "The name of the compute and memory capacity class of the DB instance. Must be db.m1.small or bigger for PostgreSQL Standard.",
+      "Type" : "String",
+      "Default" : "db.t2.micro",
+      "AllowedValues" : ["db.t2.micro","db.t2.small","db.t2.medium"],
+      "ConstraintDescription" : "must be a valid database server instance type."
+    },
+
+    "DBEngine" : {
+      "Description" : "The name of the database engine that the DB instance uses. ",
+      "Type" : "String",
+      "Default" : "postgres",
+      "AllowedValues" : ["postgres"],
+      "ConstraintDescription" : "must be a valid database engine type."
+    },
+
+    "DbAllocatedStorage" : {
+      "Description" : "The allocated storage size specified in gigabytes (GB). Must be at least 20GB for PostgreSQL",
+      "Type" : "Number",
+      "Default" : "20",
+      "MinValue" : "20",
+      "ConstraintDescription" : "Allocated storage must be at least 20GB."
+    },
+
+    "DbOptionGroupName" : {
+      "Description" : "For a multi-az deployment, set this to the name of an option group that has the PostgreSQLmirroring option. Set this parameter to empty string for those engines.",
+      "Type" : "String",
+      "Default" : ""
+    },
+
+    "VpcId": {
+      "Type": "AWS::EC2::VPC::Id",
+      "Description": "Select a default VPC ID."
+    },
+    "SubnetID": {
+      "Type": "List<AWS::EC2::Subnet::Id>",
+      "Description": "Select a default subnet ID in your selected VPC."
+    },
+    "RDSAccessSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup::Id",
+      "Description": "Name of the security group to access the RDS instance"
+    }
+  },
+
+  "Resources": {
+
+    "DbInstance": {
+      "Type": "AWS::RDS::DBInstance",
+      "Properties": {
+		"OptionGroupName": { "Ref" : "DbOptionGroupName" },
+        "AllowMajorVersionUpgrade": "false",
+        "AutoMinorVersionUpgrade": "true",
+        "DBInstanceClass": { "Ref" : "DBInstanceClass" },
+        "Port": "5432",
+        "AllocatedStorage": { "Ref" : "DbAllocatedStorage" },
+        "PubliclyAccessible": "false",
+        "StorageType": "standard",
+        "BackupRetentionPeriod": "7",
+        "Engine": { "Ref" : "DBEngine" },
+        "EngineVersion": "9.6.5",
+        "LicenseModel": "postgresql-license",
+		"PreferredBackupWindow": "04:34-05:04",
+        "PreferredMaintenanceWindow": "wed:06:46-wed:07:16",
+        "MasterUsername": { "Ref" : "DbMasterUsername" },
+        "MasterUserPassword": { "Ref" : "DbMasterUserPassword" },
+		"DBSubnetGroupName": { "Ref": "DBSubnetGroup" },
+        "VPCSecurityGroups": [
+          { "Ref": "SSMSSecurityGroup" }
+        ]
+      },
+	  "DeletionPolicy" : "Snapshot"
+    },
+    "DBSubnetGroup": {
+      "Type": "AWS::RDS::DBSubnetGroup",
+      "Properties": {
+        "DBSubnetGroupDescription": "default",
+        "SubnetIds": { "Ref": "SubnetID" }
+      }
+    },
+    "SSMSSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "Enable SSMS only",
+        "VpcId": { "Ref": "VpcId" }
+      }
+    },
+    "ingress2": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "SSMSSecurityGroup"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": "5432",
+        "ToPort": "5432",
+        "SourceSecurityGroupId": {"Ref" : "RDSAccessSecurityGroup" }
+      }
+    },
+    "egress2": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "SSMSSecurityGroup"
+        },
+        "IpProtocol": "-1",
+        "CidrIp": "0.0.0.0/0"
+      }
+    }
+},
+
+  "Outputs" : {
+
+    "AccessSecurityGroup": {
+      "Description": "This security group must be attached to anyone who wants access to this database",
+      "Value": { "Ref": "SSMSSecurityGroup" }
+    }
+  }
+}
