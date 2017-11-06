@@ -31,5 +31,5 @@ flink:
 #    zookeeper_quorum: zookeeper-zookeeper-0.omo-dev.svc.cluster,zookeeper-zookeeper-1.omo-dev.svc.cluster,zookeeper-zookeeper-2.omo-dev.svc.cluster
     zookeeper_quorum: zookeeper-zookeeper.omo-dev.svc.cluster.local
     state_s3_bucket: br-com-ihm-kubernetes-zk-qa
-    aws_access_key_id: AKIAISLAFJE2RXHZ4AIA
-    aws_secret_access_key: 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
+    aws_access_key_id: 
+    aws_secret_access_key: 
