@@ -10,7 +10,7 @@ spec:
       - "/bin/sh"
     args:
       - "-c"
-      - "touch /mnt/SUCCESS && exit 0 || exit 1"
+      - "touch /mnt/SUCCESS4 && exit 0 || exit 1"
     volumeMounts:
       - name: efs-pvc
         mountPath: "/mnt"
@@ -18,4 +18,4 @@ spec:
   volumes:
     - name: efs-pvc
       persistentVolumeClaim:
-        claimName: flink-efs-aws-efs 
+        claimName: {{ .Values.Persistence.ClaimName }}
