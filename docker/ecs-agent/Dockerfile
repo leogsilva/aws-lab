@@ -15,8 +15,8 @@ RUN Invoke-WebRequest -Uri 'https://repo.jenkins-ci.org/releases/org/jenkins-ci/
 RUN setx /M PATH $($Env:PATH + ';' + 'C:\Chocolatey\bin')
 
 RUN setx /M PATH $($Env:PATH + ';' + 'C:\Python36')
-RUN wget https://bootstrap.pypa.io/get-pip.py -O get-pip.py
-RUN python get-pip.py
+COPY get-pip.py /
+RUN python /get-pip.py
 RUN pip install awscli
 
 ENTRYPOINT ["powershell"]
