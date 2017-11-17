@@ -18,4 +18,5 @@ Persistence:
   Size: 50Gi
   MountPath: /persistentvolumes
   ClaimName: efs
+  ReclaimPolicy: Retain
   ExistingClaim: false

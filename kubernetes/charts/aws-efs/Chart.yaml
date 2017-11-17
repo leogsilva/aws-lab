@@ -1,5 +1,5 @@
 name: aws-efs
-version: 0.0.2
+version: 1.0.1
 description: Simple chart to install AWS EFS as Persistent volume
 keywords:
   - AWS
