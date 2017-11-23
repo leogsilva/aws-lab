@@ -7,7 +7,7 @@ ENV AWS_SECRET_ACCESS_KEY ""
 
 RUN Install-PackageProvider -Name chocolatey -RequiredVersion 2.8.5.130 -Force; `
     Install-Package -Name git -Force -Verbose; `
-    Install-Package -Name jdk8 -Force -Verbose; `
+    Install-Package -Name jdk8 -ProviderName chocolatey -Force -Verbose; `
     Install-Package -Name docker -RequiredVersion 17.10.0 -Force -Verbose; `
     Install-Package -Name python -RequiredVersion 3.6.0 -Force
 
