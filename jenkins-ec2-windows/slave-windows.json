@@ -172,9 +172,6 @@
         }
       }
     },
-    "ECSCluster": {
-      "Type": "AWS::ECS::Cluster"
-    },
     "CloudwatchLogsGroup": {
       "Type": "AWS::Logs::LogGroup",
       "Properties": {
@@ -192,22 +189,6 @@
         "RetentionInDays": 14
       }
     },
-    "taskdefinition": {
-      "Type": "AWS::ECS::TaskDefinition",
-      "Properties": {
-        "ContainerDefinitions": [
-          {
-            "Name": "windows_sample_app",
-            "Image": "microsoft/iis",
-            "Cpu": 100,
-            "EntryPoint":["powershell", "-Command"],
-            "Command":["New-Item -Path C:\\inetpub\\wwwroot\\index.html -Type file -Value '<html> <head> <title>Amazon ECS Sample App</title> <style>body {margin-top: 40px; background-color: #333;} </style> </head><body> <div style=color:white;text-align:center> <h1>Amazon ECS Sample App</h1> <h2>Congratulations!</h2> <p>Your application is now running on a container in Amazon ECS.</p>'; C:\\ServiceMonitor.exe w3svc"],
-            "Memory": 500,
-            "Essential": true
-          }
-        ]
-      }
-    },
     "ECSAutoScalingGroup": {
       "Type": "AWS::AutoScaling::AutoScalingGroup",
       "Properties": {
@@ -217,7 +198,7 @@
         "LaunchConfigurationName": {
           "Ref": "ContainerInstances"
         },
-        "MinSize": "1",
+        "MinSize": "0",
         "MaxSize": {
           "Ref": "MaxSize"
         },
@@ -344,16 +325,6 @@
               [
                 "<powershell> \n",
                 " # Set agent env variables for the Machine context (durable)\n",
-                " [Environment]::SetEnvironmentVariable(\"ECS_CLUSTER\", \"",
-                {
-                  "Ref": "ECSCluster"
-                },
-                "\"",
-                ", \"Machine\")",
-                "\n",
-                "Invoke-Command { netsh advfirewall firewall add rule name=\"docker engine\" dir=in action=allow protocol=TCP localport=2376 };",
-                "\n",
-                "Invoke-Command { netsh advfirewall firewall add rule name=\"docker engine\" dir=in action=allow protocol=TCP localport=2375 };",
                 "\n",
                 "echo \"iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'));\" > c:\\jenkinsjob.ps1;",
                 "echo \"refreshenv;\" >> c:\\jenkinsjob.ps1;",
@@ -362,59 +333,31 @@
                 "echo \"choco install svn -y;\" >> c:\\jenkinsjob.ps1;",
                 "echo \"Invoke-WebRequest -Uri 'https://repo.jenkins-ci.org/releases/org/jenkins-ci/plugins/swarm-client/3.4/swarm-client-3.4.jar' -OutFile 'C:\\swarm-client-3.4.jar';\" >> c:\\jenkinsjob.ps1;",
                 "echo \"Invoke-WebRequest -Uri 'https://bootstrap.pypa.io/get-pip.py' -OutFile 'C:\\get-pip.py'\" >> c:\\jenkinsjob.ps1;",
+                "echo \"c:\\java\\bin\\java -jar c:\\swarm-client-3.4.jar -master ",
+                {
+                  "Ref": "JenkinsMaster"
+                },
+                " -username ",
+                {
+                  "Ref": "JenkinsUsername"
+                },
+    					  " -password ",
+    					  {
+    						"Ref": "JenkinsPassword"
+    					  },
+                " -name win-slave -disableSslVerification -labels windows2016\" >> c:\\jenkinsjob.ps1;",
                 "$jobname = \"Jenkins-Slave-Init\";",
                 "$script =  \"C:\\jenkinsjob.ps1\";",
                 "$repeat = (New-TimeSpan -Minutes 1);",
                 "$jobpath = $env:LOCALAPPDATA + \"\\Microsoft\\Windows\\PowerShell\\ScheduledJobs\\$jobname\\ScheduledJobDefinition.xml\";",
-                "if($(Test-Path -Path $jobpath)) {",
-                "echo \"Job definition already present\";",
-                "exit 0;",
-                "}",
                 "$scriptblock = [scriptblock]::Create(\"$script\");",
                 "$trigger = New-JobTrigger -At (Get-Date).Date -RepeatIndefinitely -RepetitionInterval $repeat -Once;",
                 "$options = New-ScheduledJobOption -RunElevated -ContinueIfGoingOnBattery -StartIfOnBattery;",
                 "Register-ScheduledJob -Name $jobname -ScriptBlock $scriptblock -Trigger $trigger -ScheduledJobOption $options -RunNow;",
-                "Add-JobTrigger -Name $jobname -Trigger (New-JobTrigger -AtStartup -RandomDelay 00:1:00);",
+                "Add-JobTrigger -Name $jobname -Trigger (New-JobTrigger -AtStartup -RandomDelay 00:5:00);",
                 "echo $scriptblock >> c:\\windows\\temp\\log1jenkins.txt;",
                 "echo $trigger >> c:\\windows\\temp\\log1jenkins.txt;",
                 "echo $options >> c:\\windows\\temp\\log1jenkins.txt;",
-                "\n",
-                "$agentVersion = 'v1.15.2';",
-                "$agentZipUri = \"https://s3.amazonaws.com/amazon-ecs-agent/ecs-agent-windows-$agentVersion.zip\";",
-                "$agentZipMD5Uri = \"$agentZipUri.md5\";",
-                "$ecsExeDir = \"$env:ProgramFiles\\Amazon\\ECS\";",
-                "$zipFile = \"$env:TEMP\\ecs-agent.zip\";",
-                "echo \"log\" >> c:\\windows\\temp\\log1.txt;",
-                "echo $zipFile >> c:\\windows\\temp\\log1.txt;",
-                "echo $ecsExeDir >> c:\\windows\\temp\\log1.txt;",
-                "$md5File = \"$env:TEMP\\ecs-agent.zip.md5\";",
-                "Invoke-RestMethod -OutFile $zipFile -Uri $agentZipUri;",
-                "Invoke-RestMethod -OutFile $md5File -Uri $agentZipMD5Uri;",
-                "$expectedMD5 = (Get-Content $md5File);",
-                "$md5 = New-Object -TypeName System.Security.Cryptography.MD5CryptoServiceProvider;",
-                "$actualMD5 = [System.BitConverter]::ToString($md5.ComputeHash([System.IO.File]::ReadAllBytes($zipFile))).replace(\"-\", \"\");",
-                "if($expectedMD5 -ne $actualMD5) {",
-                "echo \"Download does not match hash.\";",
-                "echo \"Expected: $expectedMD5 - Got: $actualMD5\";",
-                "exit 1;",
-                "};",
-                "Expand-Archive -Path $zipFile -DestinationPath $ecsExeDir -Force;",
-                "$jobname = \"ECS-Agent-Init\";",
-                "$script =  \"cd '$ecsExeDir'; .\\amazon-ecs-agent.ps1\";",
-                "$repeat = (New-TimeSpan -Minutes 1);",
-                "$jobpath = $env:LOCALAPPDATA + \"\\Microsoft\\Windows\\PowerShell\\ScheduledJobs\\$jobname\\ScheduledJobDefinition.xml\";",
-                "if($(Test-Path -Path $jobpath)) {",
-                "echo \"Job definition already present\";",
-                "exit 0;",
-                "}",
-                "$scriptblock = [scriptblock]::Create(\"$script\");",
-                "$trigger = New-JobTrigger -At (Get-Date).Date -RepeatIndefinitely -RepetitionInterval $repeat -Once;",
-                "$options = New-ScheduledJobOption -RunElevated -ContinueIfGoingOnBattery -StartIfOnBattery;",
-                "Register-ScheduledJob -Name $jobname -ScriptBlock $scriptblock -Trigger $trigger -ScheduledJobOption $options -RunNow;",
-                "Add-JobTrigger -Name $jobname -Trigger (New-JobTrigger -AtStartup -RandomDelay 00:1:00);",
-                "echo $scriptblock >> c:\\windows\\temp\\log1.txt;",
-                "echo $trigger >> c:\\windows\\temp\\log1.txt;",
-                "echo $options >> c:\\windows\\temp\\log1.txt;",
                 "# end of script\n",
                 " cfn-init.exe -v -s ",
                 {
@@ -441,18 +384,6 @@
               ]
             ]
           }
-        }
-      }
-    },
-    "service": {
-      "Type": "AWS::ECS::Service",
-      "Properties": {
-        "Cluster": {
-          "Ref": "ECSCluster"
-        },
-        "DesiredCount": "1",
-        "TaskDefinition": {
-          "Ref": "taskdefinition"
         }
       }
     },
@@ -603,20 +534,6 @@
     }
   },
   "Outputs": {
-    "ecsservice": {
-      "Value": {
-        "Ref": "service"
-      }
-    },
-    "ecscluster": {
-      "Value": {
-        "Ref": "ECSCluster"
-      }
-    },
-    "taskdef": {
-      "Value": {
-        "Ref": "taskdefinition"
-      }
-    }
+
   }
 }
