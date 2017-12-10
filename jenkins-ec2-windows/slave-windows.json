@@ -331,6 +331,7 @@
                 "echo \"choco install jdk8 -y -params 'installdir=c:\\\\java';\" >> c:\\jenkinsjob.ps1;",
                 "echo \"choco install python -y; \" >> c:\\jenkinsjob.ps1;",
                 "echo \"choco install svn -y;\" >> c:\\jenkinsjob.ps1;",
+                "echo \"choco install awscli -y;\" >> c:\\jenkinsjob.ps1;",
                 "echo \"Invoke-WebRequest -Uri 'https://repo.jenkins-ci.org/releases/org/jenkins-ci/plugins/swarm-client/3.4/swarm-client-3.4.jar' -OutFile 'C:\\swarm-client-3.4.jar';\" >> c:\\jenkinsjob.ps1;",
                 "echo \"Invoke-WebRequest -Uri 'https://bootstrap.pypa.io/get-pip.py' -OutFile 'C:\\get-pip.py'\" >> c:\\jenkinsjob.ps1;",
                 "echo \"c:\\java\\bin\\java -jar c:\\swarm-client-3.4.jar -master ",

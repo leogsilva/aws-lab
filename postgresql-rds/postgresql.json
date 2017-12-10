@@ -57,6 +57,10 @@
     "RDSAccessSecurityGroup": {
       "Type": "AWS::EC2::SecurityGroup::Id",
       "Description": "Name of the security group to access the RDS instance"
+    },
+    "DBName": {
+      "Type": "String",
+      "Description": "DB name"
     }
   },
 
@@ -69,6 +73,7 @@
         "AllowMajorVersionUpgrade": "false",
         "AutoMinorVersionUpgrade": "true",
         "DBInstanceClass": { "Ref" : "DBInstanceClass" },
+        "DBName": { "Ref": "DBName" },
         "Port": "5432",
         "AllocatedStorage": { "Ref" : "DbAllocatedStorage" },
         "PubliclyAccessible": "false",
